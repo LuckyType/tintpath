@@ -1,0 +1,7 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/routes/**/+*.svelte", "src/routes/**/+*.ts", "src/lib/pipeline/worker.ts"],
+  "project": ["src/**/*.ts", "src/**/*.svelte"],
+  "ignoreExportsUsedInFile": true,
+  "ignoreDependencies": ["@testing-library/svelte", "tslib"]
+}

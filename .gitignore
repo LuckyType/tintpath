@@ -1,0 +1,12 @@
+node_modules/
+.svelte-kit/
+build/
+coverage/
+dist/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+vite.config.ts.timestamp-*
+.playwright-mcp/

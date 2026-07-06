@@ -1,0 +1,118 @@
+{
+  "app": {
+    "title": "Tintpath",
+    "tagline": "Verwandle jedes Foto in eine Malen-nach-Zahlen-Vorlage — direkt im Browser.",
+    "privacy": "100% client-seitig. Deine Bilder verlassen dieses Gerät nie."
+  },
+  "nav": {
+    "back": "Zurück",
+    "next": "Weiter",
+    "startOver": "Neu starten",
+    "stepOf": "Schritt {current} von {total}"
+  },
+  "steps": {
+    "upload": "Upload",
+    "crop": "Zuschnitt & Papier",
+    "detail": "Detailgrad",
+    "outline": "Outlines",
+    "colors": "Farben",
+    "export": "Export"
+  },
+  "upload": {
+    "drop": "Bild hierher ziehen",
+    "or": "oder",
+    "browse": "Datei auswählen",
+    "formats": "JPG, PNG oder WEBP · bis 4000×4000 px",
+    "errorFormat": "Bitte JPG, PNG oder WEBP verwenden.",
+    "errorLoad": "Das Bild konnte nicht geladen werden.",
+    "confirmLarge": "Diese Datei ist größer als 50 MB und kann langsam sein. Trotzdem laden?"
+  },
+  "crop": {
+    "title": "Bild zuschneiden und Papierformat wählen",
+    "paperSize": "Papierformat",
+    "orientation": "Ausrichtung",
+    "portrait": "Hochformat",
+    "landscape": "Querformat",
+    "custom": "Eigenes Maß",
+    "widthMm": "Breite (mm)",
+    "heightMm": "Höhe (mm)",
+    "reset": "Zuschnitt zurücksetzen",
+    "hint": "Rahmen ziehen zum Verschieben, Ecken ziehen zum Skalieren. Das Seitenverhältnis folgt dem Papierformat."
+  },
+  "detail": {
+    "title": "Detailgrad festlegen",
+    "colors": "Farben",
+    "advanced": "Erweiterte Optionen",
+    "minRegion": "Minimale Region-Größe (px)",
+    "minRegionHint": "Kleinere Regionen werden mit dem ähnlichsten Nachbarn verschmolzen.",
+    "reduceNoise": "Rauschen reduzieren",
+    "reduceNoiseHint": "Entfernt Einzel-Pixel-Artefakte vor dem Verschmelzen.",
+    "stats": "{colors} Farben, {regions} Regionen",
+    "original": "Original",
+    "quantized": "Vorschau",
+    "processing": "Berechne…"
+  },
+  "outline": {
+    "title": "Outlines prüfen",
+    "showColors": "Farben anzeigen",
+    "showNumbers": "Nummern anzeigen",
+    "numberOpacity": "Deckkraft der Nummern",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "fit": "Einpassen",
+    "canvasLabel": "Outline-Zeichnung mit nummerierten Regionen. Mit den Zoom-Buttons Details prüfen."
+  },
+  "colors": {
+    "title": "Palette anpassen",
+    "hint": "Farbfeld anklicken, um eine Farbe zu tauschen, oder ein Preset auf die ganze Palette anwenden.",
+    "filters": "Preset-Filter",
+    "filterNone": "Original",
+    "filterPastel": "Pastell",
+    "filterVintage": "Vintage",
+    "filterHighContrast": "Hoher Kontrast",
+    "filterGrayscale": "Graustufen",
+    "colorNumber": "Farbe {number}"
+  },
+  "export": {
+    "title": "Vorlage exportieren",
+    "png": "PNG",
+    "pngHint": "Hochauflösendes Rasterbild",
+    "jpg": "JPG",
+    "jpgHint": "Komprimiert, gut zum Teilen",
+    "pdf": "PDF",
+    "pdfHint": "Vorlage + Farb-Legende",
+    "svg": "SVG",
+    "svgHint": "Vektor-Outlines für Laser-Gravur",
+    "dxf": "DXF",
+    "dxfHint": "Für Laser-Software ohne SVG-Support",
+    "grayscalePng": "Graustufen-PNG",
+    "grayscalePngHint": "Variable Leistung in einem Durchgang",
+    "laserMode": "Laser-Modus",
+    "laserOutline": "Outlines (ein Layer)",
+    "laserLayerPerColor": "Layer pro Farbe",
+    "laserGrayscale": "Graustufen (variable Leistung)",
+    "resolution": "Auflösung",
+    "legendTitle": "Farb-Legende",
+    "success": "Export fertig — sieh in deine Downloads.",
+    "error": "Export fehlgeschlagen. Bitte erneut versuchen.",
+    "exporting": "Exportiere…",
+    "withColors": "Mit Farben füllen",
+    "withNumbers": "Nummern einfügen"
+  },
+  "settings": {
+    "language": "Sprache",
+    "theme": "Design",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "advancedMode": "Experten-Modus"
+  },
+  "errors": {
+    "pipeline": "Verarbeitung fehlgeschlagen. Versuche ein kleineres Bild oder weniger Farben.",
+    "lowContrast": "Das Bild hat sehr wenig Kontrast — versuche weniger Farben.",
+    "generic": "Etwas ist schiefgelaufen."
+  },
+  "footer": {
+    "openSource": "Kostenlos & Open Source (MIT)",
+    "noUploads": "Keine Uploads, keine Konten, kein Tracking"
+  }
+}

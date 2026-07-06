@@ -1,0 +1,118 @@
+{
+  "app": {
+    "title": "Tintpath",
+    "tagline": "Turn any photo into a paint-by-numbers template — right in your browser.",
+    "privacy": "100% client-side. Your images never leave this device."
+  },
+  "nav": {
+    "back": "Back",
+    "next": "Next",
+    "startOver": "Start over",
+    "stepOf": "Step {current} of {total}"
+  },
+  "steps": {
+    "upload": "Upload",
+    "crop": "Crop & paper",
+    "detail": "Detail",
+    "outline": "Outlines",
+    "colors": "Colors",
+    "export": "Export"
+  },
+  "upload": {
+    "drop": "Drag & drop an image here",
+    "or": "or",
+    "browse": "Browse files",
+    "formats": "JPG, PNG or WEBP · up to 4000×4000 px",
+    "errorFormat": "Please use a JPG, PNG or WEBP image.",
+    "errorLoad": "The image could not be loaded.",
+    "confirmLarge": "This file is larger than 50 MB and may be slow to process. Load it anyway?"
+  },
+  "crop": {
+    "title": "Crop your image and pick a paper size",
+    "paperSize": "Paper size",
+    "orientation": "Orientation",
+    "portrait": "Portrait",
+    "landscape": "Landscape",
+    "custom": "Custom",
+    "widthMm": "Width (mm)",
+    "heightMm": "Height (mm)",
+    "reset": "Reset crop",
+    "hint": "Drag the frame to move it, drag a corner to resize. The aspect ratio follows the paper size."
+  },
+  "detail": {
+    "title": "Choose the level of detail",
+    "colors": "Colors",
+    "advanced": "Advanced options",
+    "minRegion": "Minimum region size (px)",
+    "minRegionHint": "Smaller regions are merged into the most similar neighbor.",
+    "reduceNoise": "Reduce noise",
+    "reduceNoiseHint": "Removes single-pixel artifacts before merging.",
+    "stats": "{colors} colors, {regions} regions",
+    "original": "Original",
+    "quantized": "Preview",
+    "processing": "Computing…"
+  },
+  "outline": {
+    "title": "Inspect the outlines",
+    "showColors": "Show colors",
+    "showNumbers": "Show numbers",
+    "numberOpacity": "Number opacity",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to view",
+    "canvasLabel": "Outline drawing with numbered regions. Use the zoom buttons to inspect details."
+  },
+  "colors": {
+    "title": "Adjust the palette",
+    "hint": "Click a swatch to swap a single color, or apply a preset to the whole palette.",
+    "filters": "Preset filters",
+    "filterNone": "Original",
+    "filterPastel": "Pastel",
+    "filterVintage": "Vintage",
+    "filterHighContrast": "High contrast",
+    "filterGrayscale": "Grayscale",
+    "colorNumber": "Color {number}"
+  },
+  "export": {
+    "title": "Export your template",
+    "png": "PNG",
+    "pngHint": "High-resolution raster image",
+    "jpg": "JPG",
+    "jpgHint": "Compressed, good for sharing",
+    "pdf": "PDF",
+    "pdfHint": "Template + color legend",
+    "svg": "SVG",
+    "svgHint": "Vector outlines for laser engraving",
+    "dxf": "DXF",
+    "dxfHint": "For laser software without SVG support",
+    "grayscalePng": "Grayscale PNG",
+    "grayscalePngHint": "Variable-power engraving in one pass",
+    "laserMode": "Laser mode",
+    "laserOutline": "Outlines (one layer)",
+    "laserLayerPerColor": "Layer per color",
+    "laserGrayscale": "Grayscale (variable power)",
+    "resolution": "Resolution",
+    "legendTitle": "Color legend",
+    "success": "Export ready — check your downloads.",
+    "error": "Export failed. Please try again.",
+    "exporting": "Exporting…",
+    "withColors": "Fill with colors",
+    "withNumbers": "Include numbers"
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "advancedMode": "Advanced mode"
+  },
+  "errors": {
+    "pipeline": "Processing failed. Try a smaller image or fewer colors.",
+    "lowContrast": "The image has very little contrast — try fewer colors.",
+    "generic": "Something went wrong."
+  },
+  "footer": {
+    "openSource": "Free & open source (MIT)",
+    "noUploads": "No uploads, no accounts, no tracking"
+  }
+}

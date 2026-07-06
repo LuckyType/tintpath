@@ -1,0 +1,54 @@
+# prek: Rust-basierter Git Hook Manager (drop-in für pre-commit)
+# Installation: uv tool install prek  ODER  cargo install prek  ODER  brew install prek
+# Setup: prek install  (installiert die Git Hooks automatisch)
+
+[[repos]]
+repo = "builtin" # prek's Rust-native Built-in Hooks (kein Python nötig)
+
+[[repos.hooks]]
+id = "trailing-whitespace"
+
+[[repos.hooks]]
+id = "end-of-file-fixer"
+
+[[repos.hooks]]
+id = "check-yaml"
+
+[[repos.hooks]]
+id = "check-json"
+
+[[repos.hooks]]
+id = "check-added-large-files"
+
+# Lokale Hooks für unsere Tools
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "biome-check"
+name = "Biome Check"
+language = "system"
+entry = "npx biome check --apply"
+files = "\\.(js|ts|svelte|json)$"
+
+[[repos.hooks]]
+id = "svelte-check"
+name = "svelte-check"
+language = "system"
+entry = "npx svelte-check --tsconfig ./tsconfig.json"
+files = "\\.(ts|svelte)$"
+
+[[repos.hooks]]
+id = "vitest"
+name = "Vitest"
+language = "system"
+entry = "npx vitest run --quiet"
+files = "\\.(ts|test\\.ts)$"
+pass_filenames = false
+
+[[repos.hooks]]
+id = "knip"
+name = "Knip"
+language = "system"
+entry = "npx knip --no-progress"
+pass_filenames = false
