@@ -78,6 +78,8 @@ onMount(() => {
       >
       ·
       <a class="underline hover:text-blue-600" href="/imprint">{$_('imprint.title')}</a>
+      ·
+      <a class="underline hover:text-blue-600" href="/privacy">{$_('privacy.title')}</a>
     </p>
   </footer>
 </div>

@@ -22,6 +22,9 @@ import { _ } from 'svelte-i18n';
     <p class="whitespace-pre-line text-sm text-slate-600 dark:text-slate-300">
       {$_('imprint.privacyBody')}
     </p>
+    <a href="/privacy" class="mt-2 inline-block text-sm text-blue-600 underline dark:text-blue-400">
+      {$_('privacy.title')}
+    </a>
   </section>
 
   <section class="card">

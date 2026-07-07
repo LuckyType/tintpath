@@ -137,9 +137,9 @@
     "contactHeading": "Betreiber",
     "contactBody": "[Dein Name]\n[Straße und Hausnummer]\n[PLZ, Ort]\n[Land]\nE-Mail: [deine@email.example]\n\nErsetze diesen Platzhalter vor der Veröffentlichung durch deine Angaben (§ 5 TMG).",
     "privacyHeading": "Datenschutz",
-    "privacyBody": "Tintpath läuft vollständig in deinem Browser. Bilder werden lokal verarbeitet und niemals auf einen Server hochgeladen.\n\nUI-Einstellungen und — falls genutzt — die Fortsetzen-Funktion speichern Daten ausschließlich auf diesem Gerät (localStorage / IndexedDB). Mit „Neu starten“ oder „Verwerfen“ kannst du sie jederzeit löschen.\n\nDer Stern-Zähler im Header fragt die öffentliche GitHub-API ab; dabei werden keine personenbezogenen Daten übermittelt.",
-    "disclaimerHeading": "Haftungsausschluss",
-    "disclaimerBody": "Dies ist ein kostenloses Open-Source-Tool und wird ohne Gewähr bereitgestellt. Externe Links führen zu Inhalten Dritter, für die die jeweiligen Betreiber verantwortlich sind.",
+    "privacyBody": "Details zum Datenschutz stehen in der Datenschutzerklärung. Kurz gesagt: Bilder werden nur in deinem Browser verarbeitet, nichts wird hochgeladen, keine Cookies, kein Tracking.",
+    "disclaimerHeading": "Nutzungsbedingungen & Haftung",
+    "disclaimerBody": "Tintpath ist kostenlose Open-Source-Software (MIT-Lizenz) und wird ohne Gewähr bereitgestellt („as is“). Die Nutzung erfolgt auf eigenes Risiko; du bist selbst dafür verantwortlich, die Rechte an den verarbeiteten Bildern zu besitzen. Externe Links führen zu Inhalten Dritter, für die die jeweiligen Betreiber verantwortlich sind.",
     "backToApp": "Zurück zur App"
   },
   "errors": {
@@ -157,5 +157,25 @@
     "fullscreen": "Vollbild",
     "exitFullscreen": "Vollbild beenden",
     "zoomHint": "Scrollen zum Zoomen · Ziehen zum Verschieben · Doppelklick zum Umschalten"
+  },
+  "privacy": {
+    "title": "Datenschutzerklärung",
+    "updated": "Stand: Juli 2026",
+    "intro": "Tintpath ist so gebaut, dass es ohne deine Daten auskommt: Bilder werden vollständig in deinem Browser verarbeitet, es gibt keine Konten, kein Tracking und keine Werbung. Diese Seite erklärt das Wenige, das übrig bleibt.",
+    "controllerHeading": "Verantwortlicher",
+    "controllerBody": "Verantwortlich für diese Website ist der im Impressum genannte Betreiber. Für alle Datenschutzanfragen nutze bitte die dort angegebenen Kontaktdaten.",
+    "noCookiesHeading": "Keine Cookies, kein Tracking",
+    "noCookiesBody": "Diese Website setzt keine Cookies und nutzt keine Analyse-, Tracking- oder Werbedienste. Deshalb gibt es auch keinen Cookie-Banner: Nach § 25 Abs. 2 TDDDG ist eine Einwilligung nur für nicht unbedingt erforderliche Speicherung nötig — alles, was Tintpath speichert, ist funktional (siehe unten).",
+    "processingHeading": "Bildverarbeitung",
+    "processingBody": "Hochgeladene Fotos werden ausschließlich auf deinem Gerät dekodiert, bearbeitet und umgewandelt. Bilddaten, Paletten oder Ergebnisse werden zu keinem Zeitpunkt an einen Server übertragen.",
+    "storageHeading": "Lokale Speicherung auf deinem Gerät",
+    "storageBody": "Zwei Arten von Daten werden lokal in deinem Browser gespeichert, ausschließlich für Funktionen, die du aktiv nutzt (Art. 6 Abs. 1 lit. b DSGVO, § 25 Abs. 2 TDDDG):\n\n· UI-Einstellungen (Sprache, Design, Experten-Modus) im localStorage unter „tintpath:settings“.\n· Die Fortsetzen-Funktion sichert deine aktuelle Sitzung (Ausgangsbild und Wizard-Einstellungen) in IndexedDB, damit du nach einem Neuladen weitermachen kannst.\n\nDiese Daten verlassen dein Gerät nicht. Du kannst sie jederzeit über „Neu starten“ / „Verwerfen“ in der App oder über die Website-Daten-Einstellungen deines Browsers löschen. Der Service Worker cacht zusätzlich die statischen Dateien der App für die Offline-Nutzung.",
+    "hostingHeading": "Hosting und Server-Logs",
+    "hostingBody": "Beim Aufruf dieser Website muss der Hosting-Anbieter deine IP-Adresse technisch verarbeiten, um die Seiten auszuliefern, und führt ggf. kurzlebige Zugriffs-Logs (IP-Adresse, Datum und Uhrzeit, aufgerufene URL, User-Agent) zur Sicherheit und Stabilität (Art. 6 Abs. 1 lit. f DSGVO).\n\nHosting-Anbieter: [Name und Anschrift deines Hosting-Anbieters — vor Veröffentlichung ersetzen.]",
+    "githubHeading": "GitHub-Stern-Zähler",
+    "githubBody": "Im Header wird die Anzahl der GitHub-Sterne des Projekts angezeigt. Dafür sendet dein Browser eine Anfrage an die öffentliche GitHub-API (GitHub, Inc., USA), die technisch bedingt deine IP-Adresse enthält. Rechtsgrundlage ist unser berechtigtes Interesse an der Präsentation des Open-Source-Projekts (Art. 6 Abs. 1 lit. f DSGVO); das Ergebnis wird eine Stunde im Browser zwischengespeichert, um Anfragen zu minimieren. Details zur Verarbeitung durch GitHub findest du in deren Datenschutzerklärung.",
+    "rightsHeading": "Deine Rechte",
+    "rightsBody": "Nach Art. 15–21 DSGVO hast du das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Da Tintpath selbst keine personenbezogenen Daten über dich speichert, gibt es in der Regel nichts, was wir beauskunften oder löschen könnten — alles liegt in deinem eigenen Browser. Außerdem hast du das Recht auf Beschwerde bei einer Datenschutz-Aufsichtsbehörde (Art. 77 DSGVO).",
+    "backToApp": "Zurück zur App"
   }
 }

@@ -137,9 +137,9 @@
     "contactHeading": "Site operator",
     "contactBody": "[Your name]\n[Street and number]\n[Postal code, city]\n[Country]\nEmail: [your@email.example]\n\nReplace this placeholder with your details before publishing the site.",
     "privacyHeading": "Privacy",
-    "privacyBody": "Tintpath runs entirely in your browser. Images are processed locally and are never uploaded to a server.\n\nUI preferences and — if you use it — the resume feature store data only on this device (localStorage / IndexedDB). Use “Start over” or “Discard” to delete it at any time.\n\nThe star counter in the header queries the public GitHub API; no personal data is transmitted.",
-    "disclaimerHeading": "Disclaimer",
-    "disclaimerBody": "This is a free, open-source tool provided “as is”, without warranty of any kind. External links lead to third-party content for which the respective operators are responsible.",
+    "privacyBody": "Details on data protection are in the privacy policy. In short: images are processed only in your browser, nothing is uploaded, no cookies, no tracking.",
+    "disclaimerHeading": "Terms of use & liability",
+    "disclaimerBody": "Tintpath is free, open-source software (MIT license), provided “as is” and without warranty of any kind. You use it at your own risk and are responsible for holding the rights to the images you process. External links lead to third-party content for which the respective operators are responsible.",
     "backToApp": "Back to the app"
   },
   "errors": {
@@ -157,5 +157,25 @@
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit fullscreen",
     "zoomHint": "Scroll to zoom · drag to pan · double-click to toggle"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "updated": "Last updated: July 2026",
+    "intro": "Tintpath is built to work without your data: images are processed entirely in your browser, there are no accounts, no tracking and no advertising. This page explains the little that remains.",
+    "controllerHeading": "Controller",
+    "controllerBody": "Responsible for this website is the operator named in the imprint. For any privacy request, use the contact details given there.",
+    "noCookiesHeading": "No cookies, no tracking",
+    "noCookiesBody": "This site sets no cookies and uses no analytics, tracking pixels or advertising services. That is why there is no cookie banner: under § 25 (2) TDDDG, consent is only required for storage that is not strictly necessary — everything Tintpath stores is functional (see below).",
+    "processingHeading": "Image processing",
+    "processingBody": "Uploaded photos are decoded, edited and converted exclusively on your device. No image data, palettes or results are ever transmitted to a server.",
+    "storageHeading": "Local storage on your device",
+    "storageBody": "Two kinds of data are stored locally in your browser, solely to provide features you actively use (Art. 6 (1) (b) GDPR, § 25 (2) TDDDG):\n\n· UI settings (language, theme, advanced mode) in localStorage under “tintpath:settings”.\n· The resume feature saves your current session (source image and wizard settings) in IndexedDB so you can continue after a reload.\n\nThis data never leaves your device. You can delete it at any time via “Start over” / “Discard” in the app or through your browser’s site-data settings. The service worker additionally caches the app’s static files for offline use.",
+    "hostingHeading": "Hosting and server logs",
+    "hostingBody": "When you open this website, the hosting provider technically needs to process your IP address to deliver the pages, and may keep short-lived access logs (IP address, date and time, requested URL, user agent) for security and stability (Art. 6 (1) (f) GDPR).\n\nHosting provider: [Name and address of your hosting provider — replace before publishing.]",
+    "githubHeading": "GitHub star counter",
+    "githubBody": "The header shows the project’s GitHub star count. To fetch it, your browser sends one request to the public GitHub API (GitHub, Inc., USA), which technically includes your IP address. Legal basis is our legitimate interest in presenting the open-source project (Art. 6 (1) (f) GDPR); the result is cached in your browser for one hour to minimize requests. See GitHub’s privacy statement for details on their processing.",
+    "rightsHeading": "Your rights",
+    "rightsBody": "Under Art. 15–21 GDPR you have the right to access, rectification, erasure, restriction of processing, data portability and objection. Since Tintpath itself stores no personal data about you, there is usually nothing we could disclose or delete — everything lives in your own browser. You also have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR).",
+    "backToApp": "Back to the app"
   }
 }
