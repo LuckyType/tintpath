@@ -5,10 +5,32 @@ import DetailSlider from '$lib/components/DetailSlider.svelte';
 import ExportPanel from '$lib/components/ExportPanel.svelte';
 import OutlineView from '$lib/components/OutlineView.svelte';
 import Uploader from '$lib/components/Uploader.svelte';
+import { clearSession, persistState } from '$lib/persist';
 import { TOTAL_STEPS, project } from '$lib/stores/project';
+import type { ProjectState } from '$lib/types';
+import { onDestroy } from 'svelte';
 import { _ } from 'svelte-i18n';
 
 const stepKeys = ['upload', 'crop', 'detail', 'outline', 'colors', 'export'] as const;
+
+const SAVE_DEBOUNCE_MS = 1000;
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let latestState: ProjectState | null = null;
+
+// Auto-save the session (locally, IndexedDB) so users can pick up later
+const unsubscribeSave = project.subscribe((s) => {
+  latestState = s;
+  if (!s.sourceImage || !s.sourceBlob) return;
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    if (latestState) void persistState(latestState);
+  }, SAVE_DEBOUNCE_MS);
+});
+
+onDestroy(() => {
+  unsubscribeSave();
+  if (saveTimer) clearTimeout(saveTimer);
+});
 
 $: state = $project;
 
@@ -34,7 +56,9 @@ function handleStepClick(step: number) {
 }
 
 function handleReset() {
+  if (saveTimer) clearTimeout(saveTimer);
   project.reset();
+  void clearSession();
 }
 </script>
 

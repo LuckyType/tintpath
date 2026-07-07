@@ -1,4 +1,5 @@
 <script lang="ts">
+import AdvancedToggle from '$lib/components/AdvancedToggle.svelte';
 import { generateDxf } from '$lib/export/dxf';
 import { exportPdf } from '$lib/export/pdf';
 import { downloadBlob, exportGrayscalePng, exportRaster } from '$lib/export/png';
@@ -20,7 +21,7 @@ let withNumbers = true;
 $: state = $project;
 $: baseName = (state.sourceName.replace(/\.[^.]+$/, '') || 'tintpath').slice(0, 40);
 $: if (canvas && state.result)
-  redrawOn(state.palette, withColors, withNumbers, state.numberOpacity);
+  redrawOn(state.palette, withColors, withNumbers, state.numberOpacity, state.lineScale);
 
 function redrawOn(..._deps: unknown[]) {
   draw();
@@ -49,7 +50,7 @@ function draw() {
     showFill: withColors,
     showNumbers: withNumbers,
     numberOpacity: state.numberOpacity,
-    lineWidth: 1 * dpr,
+    lineWidth: 1 * dpr * state.lineScale,
   });
 }
 
@@ -79,6 +80,7 @@ const exportPng = () =>
       showFill: withColors,
       showNumbers: withNumbers,
       numberOpacity: state.numberOpacity,
+      lineScale: state.lineScale,
     });
     downloadBlob(blob, `${baseName}-template.png`);
   });
@@ -96,6 +98,8 @@ const exportJpg = () =>
       showFill: withColors,
       showNumbers: withNumbers,
       numberOpacity: state.numberOpacity,
+      lineScale: state.lineScale,
+      quality: state.jpgQuality,
     });
     downloadBlob(blob, `${baseName}-template.jpg`);
   });
@@ -113,6 +117,7 @@ const exportPdfFile = () =>
       showFill: withColors,
       showNumbers: withNumbers,
       numberOpacity: state.numberOpacity,
+      lineScale: state.lineScale,
     });
     downloadBlob(blob, `${baseName}-template.pdf`);
   });
@@ -160,7 +165,7 @@ function onDpiChange(event: Event) {
 }
 
 onMount(() => {
-  if (!state.result && state.croppedImage) void project.recompute();
+  if (!state.result && state.croppedImage && !state.processing) void project.recompute();
   const observer = new ResizeObserver(() => draw());
   observer.observe(container);
   return () => observer.disconnect();
@@ -201,6 +206,7 @@ onMount(() => {
           {Math.round(state.numberOpacity * 100)}%
         </span>
       </label>
+      <AdvancedToggle />
       {#if $settings.advancedMode}
         <div>
           <label class="field-label" for="export-dpi">{$_('export.resolution')}</label>
@@ -213,6 +219,21 @@ onMount(() => {
             <option value="300">300 DPI</option>
             <option value="600">600 DPI</option>
           </select>
+        </div>
+        <div>
+          <label class="field-label" for="jpg-quality">
+            {$_('export.jpgQuality')}: <strong>{Math.round(state.jpgQuality * 100)}%</strong>
+          </label>
+          <input
+            id="jpg-quality"
+            type="range"
+            min="50"
+            max="100"
+            step="5"
+            class="w-full accent-blue-600"
+            value={Math.round(state.jpgQuality * 100)}
+            on:input={(e) => project.setJpgQuality(Number(e.currentTarget.value) / 100)}
+          />
         </div>
       {/if}
     </div>

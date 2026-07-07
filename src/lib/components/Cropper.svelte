@@ -1,4 +1,5 @@
 <script lang="ts">
+import AdvancedToggle from '$lib/components/AdvancedToggle.svelte';
 import { PAPER_SIZES, customPaperFormat, makePaperFormat, paperAspect } from '$lib/paper';
 import { defaultCrop, project } from '$lib/stores/project';
 import { settings } from '$lib/stores/settings';
@@ -277,6 +278,7 @@ onMount(() => {
       </div>
     </fieldset>
 
+    <AdvancedToggle />
     {#if $settings.advancedMode}
       <div>
         <label class="field-label" for="dpi-select">{$_('export.resolution')}</label>

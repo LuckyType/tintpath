@@ -69,6 +69,7 @@ export interface PdfExportParams {
   showFill?: boolean;
   showNumbers?: boolean;
   numberOpacity?: number;
+  lineScale?: number;
 }
 
 /** Template page(s) + color legend, sized to the chosen paper format. */

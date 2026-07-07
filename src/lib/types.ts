@@ -4,7 +4,20 @@ export type Orientation = 'portrait' | 'landscape';
 
 export type LaserMode = 'outline' | 'layer-per-color' | 'grayscale';
 
-export type PaletteFilter = 'none' | 'pastel' | 'vintage' | 'high-contrast' | 'grayscale';
+export type PaletteFilter =
+  | 'none'
+  | 'pastel'
+  | 'vintage'
+  | 'high-contrast'
+  | 'grayscale'
+  | 'neon'
+  | 'synthwave'
+  | 'anaglyph'
+  | 'pop-art'
+  | 'ocean'
+  | 'sunset';
+
+export type Smoothing = 'low' | 'medium' | 'high';
 
 export interface CropRegion {
   x: number;
@@ -55,6 +68,7 @@ export interface PipelineParams {
   detailLevel: number;
   minRegionSize: number;
   reduceNoise: boolean;
+  smoothing?: Smoothing;
   seed?: number;
 }
 
@@ -71,6 +85,7 @@ export interface PipelineResult {
 export interface ProjectState {
   step: number;
   sourceImage: ImageBitmap | null;
+  sourceBlob: Blob | null;
   sourceName: string;
   crop: CropRegion | null;
   paperFormat: PaperFormat;
@@ -78,6 +93,7 @@ export interface ProjectState {
   detailLevel: number;
   minRegionSize: number;
   reduceNoise: boolean;
+  smoothing: Smoothing;
   croppedImage: ImageData | null;
   croppedSignature: string;
   result: PipelineResult | null;
@@ -86,6 +102,8 @@ export interface ProjectState {
   activeFilter: PaletteFilter;
   laserMode: LaserMode;
   numberOpacity: number;
+  lineScale: number;
+  jpgQuality: number;
   processing: boolean;
   error: string | null;
 }

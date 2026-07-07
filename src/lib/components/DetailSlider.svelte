@@ -1,7 +1,9 @@
 <script lang="ts">
+import AdvancedToggle from '$lib/components/AdvancedToggle.svelte';
 import { renderQuantizedPixels } from '$lib/render';
 import { project } from '$lib/stores/project';
 import { settings } from '$lib/stores/settings';
+import type { Smoothing } from '$lib/types';
 import { onDestroy, onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
@@ -57,9 +59,14 @@ function onNoiseChange(event: Event) {
   scheduleRecompute();
 }
 
+function onSmoothingChange(event: Event) {
+  project.setSmoothing((event.currentTarget as HTMLSelectElement).value as Smoothing);
+  scheduleRecompute();
+}
+
 onMount(() => {
   if (!state.croppedImage) project.applyCrop();
-  if (!$project.result && $project.croppedImage) void project.recompute();
+  if (!$project.result && $project.croppedImage && !$project.processing) void project.recompute();
 });
 
 onDestroy(() => {
@@ -137,11 +144,9 @@ onDestroy(() => {
       </div>
     {/if}
 
-    <details open={$settings.advancedMode}>
-      <summary class="cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-300">
-        {$_('detail.advanced')}
-      </summary>
-      <div class="mt-3 flex flex-col gap-4">
+    <AdvancedToggle />
+    {#if $settings.advancedMode}
+      <div class="flex flex-col gap-4">
         <div>
           <label class="field-label" for="min-region">
             {$_('detail.minRegion')}: <strong>{state.minRegionSize}</strong>
@@ -158,6 +163,20 @@ onDestroy(() => {
           />
           <p class="mt-1 text-xs text-slate-500">{$_('detail.minRegionHint')}</p>
         </div>
+        <div>
+          <label class="field-label" for="smoothing-select">{$_('detail.smoothing')}</label>
+          <select
+            id="smoothing-select"
+            class="select"
+            value={state.smoothing}
+            on:change={onSmoothingChange}
+          >
+            <option value="low">{$_('detail.smoothingLow')}</option>
+            <option value="medium">{$_('detail.smoothingMedium')}</option>
+            <option value="high">{$_('detail.smoothingHigh')}</option>
+          </select>
+          <p class="mt-1 text-xs text-slate-500">{$_('detail.smoothingHint')}</p>
+        </div>
         <label class="flex min-h-[44px] items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -171,7 +190,7 @@ onDestroy(() => {
           </span>
         </label>
       </div>
-    </details>
+    {/if}
 
     {#if state.error}
       <p class="text-sm text-red-600" role="alert">{$_('errors.pipeline')}</p>

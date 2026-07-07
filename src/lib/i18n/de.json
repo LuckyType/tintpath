@@ -25,7 +25,11 @@
     "formats": "JPG, PNG oder WEBP · bis 4000×4000 px",
     "errorFormat": "Bitte JPG, PNG oder WEBP verwenden.",
     "errorLoad": "Das Bild konnte nicht geladen werden.",
-    "confirmLarge": "Diese Datei ist größer als 50 MB und kann langsam sein. Trotzdem laden?"
+    "confirmLarge": "Diese Datei ist größer als 50 MB und kann langsam sein. Trotzdem laden?",
+    "resumeTitle": "Da weitermachen, wo du aufgehört hast?",
+    "resumeSavedAt": "gespeichert {date}",
+    "resume": "Fortsetzen",
+    "discard": "Verwerfen"
   },
   "crop": {
     "title": "Bild zuschneiden und Papierformat wählen",
@@ -47,6 +51,11 @@
     "minRegionHint": "Kleinere Regionen werden mit dem ähnlichsten Nachbarn verschmolzen.",
     "reduceNoise": "Rauschen reduzieren",
     "reduceNoiseHint": "Entfernt Einzel-Pixel-Artefakte vor dem Verschmelzen.",
+    "smoothing": "Outline-Glättung",
+    "smoothingLow": "Gering (mehr Details)",
+    "smoothingMedium": "Mittel",
+    "smoothingHigh": "Stark (glatter)",
+    "smoothingHint": "Wie stark die nachgezeichneten Outlines vereinfacht werden.",
     "stats": "{colors} Farben, {regions} Regionen",
     "original": "Original",
     "quantized": "Vorschau",
@@ -57,6 +66,7 @@
     "showColors": "Farben anzeigen",
     "showNumbers": "Nummern anzeigen",
     "numberOpacity": "Deckkraft der Nummern",
+    "lineWidth": "Linienstärke",
     "zoomIn": "Vergrößern",
     "zoomOut": "Verkleinern",
     "fit": "Einpassen",
@@ -71,6 +81,12 @@
     "filterVintage": "Vintage",
     "filterHighContrast": "Hoher Kontrast",
     "filterGrayscale": "Graustufen",
+    "filterNeon": "Neon",
+    "filterSynthwave": "Synthwave",
+    "filterAnaglyph": "3D-Retro",
+    "filterPopArt": "Pop-Art",
+    "filterOcean": "Ozean",
+    "filterSunset": "Sonnenuntergang",
     "colorNumber": "Farbe {number}"
   },
   "export": {
@@ -92,6 +108,7 @@
     "laserLayerPerColor": "Layer pro Farbe",
     "laserGrayscale": "Graustufen (variable Leistung)",
     "resolution": "Auflösung",
+    "jpgQuality": "JPG-Qualität",
     "legendTitle": "Farb-Legende",
     "success": "Export fertig — sieh in deine Downloads.",
     "error": "Export fehlgeschlagen. Bitte erneut versuchen.",
@@ -104,7 +121,17 @@
     "theme": "Design",
     "themeLight": "Hell",
     "themeDark": "Dunkel",
-    "advancedMode": "Experten-Modus"
+    "advancedMode": "Erweiterte Optionen"
+  },
+  "imprint": {
+    "title": "Impressum",
+    "contactHeading": "Betreiber",
+    "contactBody": "[Dein Name]\n[Straße und Hausnummer]\n[PLZ, Ort]\n[Land]\nE-Mail: [deine@email.example]\n\nErsetze diesen Platzhalter vor der Veröffentlichung durch deine Angaben (§ 5 TMG).",
+    "privacyHeading": "Datenschutz",
+    "privacyBody": "Tintpath läuft vollständig in deinem Browser. Bilder werden lokal verarbeitet und niemals auf einen Server hochgeladen.\n\nUI-Einstellungen und — falls genutzt — die Fortsetzen-Funktion speichern Daten ausschließlich auf diesem Gerät (localStorage / IndexedDB). Mit „Neu starten“ oder „Verwerfen“ kannst du sie jederzeit löschen.\n\nDer Stern-Zähler im Header fragt die öffentliche GitHub-API ab; dabei werden keine personenbezogenen Daten übermittelt.",
+    "disclaimerHeading": "Haftungsausschluss",
+    "disclaimerBody": "Dies ist ein kostenloses Open-Source-Tool und wird ohne Gewähr bereitgestellt. Externe Links führen zu Inhalten Dritter, für die die jeweiligen Betreiber verantwortlich sind.",
+    "backToApp": "Zurück zur App"
   },
   "errors": {
     "pipeline": "Verarbeitung fehlgeschlagen. Versuche ein kleineres Bild oder weniger Farben.",

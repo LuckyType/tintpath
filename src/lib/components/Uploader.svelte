@@ -1,31 +1,18 @@
 <script lang="ts">
+import { loadBitmap } from '$lib/image';
+import { type SavedSession, clearSession, loadSession } from '$lib/persist';
 import { project } from '$lib/stores/project';
 import { toast } from '$lib/stores/toast';
-import { _ } from 'svelte-i18n';
+import { onMount } from 'svelte';
+import { _, locale } from 'svelte-i18n';
 
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIDE = 4000;
 const MAX_BYTES = 50 * 1024 * 1024;
 
 let dragOver = false;
 let loading = false;
 let fileInput: HTMLInputElement;
-
-async function toBitmap(file: File): Promise<ImageBitmap> {
-  const bitmap = await createImageBitmap(file);
-  const largest = Math.max(bitmap.width, bitmap.height);
-  if (largest <= MAX_SIDE) return bitmap;
-  // Downscale oversized images before they enter the pipeline
-  const scale = MAX_SIDE / largest;
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return bitmap;
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  return createImageBitmap(canvas);
-}
+let saved: SavedSession | null = null;
 
 async function handleFile(file: File | undefined | null) {
   if (!file) return;
@@ -36,8 +23,8 @@ async function handleFile(file: File | undefined | null) {
   if (file.size > MAX_BYTES && !confirm($_('upload.confirmLarge'))) return;
   loading = true;
   try {
-    const bitmap = await toBitmap(file);
-    project.setImage(bitmap, file.name);
+    const bitmap = await loadBitmap(file);
+    project.setImage(bitmap, file.name, file);
   } catch {
     toast('error', $_('upload.errorLoad'));
   } finally {
@@ -56,7 +43,54 @@ function onChange(event: Event) {
   void handleFile(input.files?.[0]);
   input.value = '';
 }
+
+async function resumeSession() {
+  if (!saved) return;
+  loading = true;
+  try {
+    const bitmap = await loadBitmap(saved.imageBlob);
+    await project.restoreSession(saved, bitmap, saved.imageBlob);
+  } catch {
+    toast('error', $_('upload.errorLoad'));
+    saved = null;
+    void clearSession();
+  } finally {
+    loading = false;
+  }
+}
+
+function discardSession() {
+  saved = null;
+  void clearSession();
+}
+
+onMount(async () => {
+  saved = await loadSession();
+});
 </script>
+
+{#if saved}
+  <div
+    class="card mb-4 flex flex-wrap items-center gap-3 !border-blue-300 bg-blue-50/60 dark:!border-blue-800 dark:bg-slate-800"
+  >
+    <div class="min-w-0 flex-1">
+      <p class="font-medium">{$_('upload.resumeTitle')}</p>
+      <p class="truncate text-sm text-slate-500 dark:text-slate-400">
+        {saved.sourceName} · {$_('upload.resumeSavedAt', {
+          values: { date: new Date(saved.savedAt).toLocaleString($locale ?? undefined) },
+        })}
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" class="btn-primary" disabled={loading} on:click={resumeSession}>
+        {$_('upload.resume')}
+      </button>
+      <button type="button" class="btn-secondary" disabled={loading} on:click={discardSession}>
+        {$_('upload.discard')}
+      </button>
+    </div>
+  </div>
+{/if}
 
 <div
   class="card flex min-h-[320px] flex-col items-center justify-center gap-4 border-2 border-dashed text-center

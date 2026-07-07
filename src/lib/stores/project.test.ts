@@ -40,6 +40,10 @@ describe('project store', () => {
     expect(state.paperFormat.dpi).toBe(300);
     expect(state.orientation).toBe('portrait');
     expect(state.laserMode).toBe('outline');
+    expect(state.smoothing).toBe('medium');
+    expect(state.lineScale).toBe(1);
+    expect(state.jpgQuality).toBe(0.92);
+    expect(state.numberOpacity).toBe(0.9);
     expect(state.result).toBeNull();
   });
 
@@ -145,6 +149,66 @@ describe('project store', () => {
     expect(state.palette[0].rgb).toEqual([255, 0, 0]);
     expect(state.basePalette[0].hex).toBe('#ff0000');
     expect(state.activeFilter).toBe('none');
+  });
+
+  it('overridePalette replaces colors by hex and updates the baseline', async () => {
+    const store = createProjectStore(fakeRunner);
+    store.setCroppedImage(fakeImageData());
+    await store.recompute();
+    store.overridePalette(['#112233', '#445566']);
+    const state = get(store);
+    expect(state.palette.map((c) => c.hex)).toEqual(['#112233', '#445566']);
+    expect(state.basePalette.map((c) => c.hex)).toEqual(['#112233', '#445566']);
+    expect(state.palette[0].rgb).toEqual([17, 34, 51]);
+  });
+
+  it('overridePalette ignores mismatched lengths', async () => {
+    const store = createProjectStore(fakeRunner);
+    store.setCroppedImage(fakeImageData());
+    await store.recompute();
+    const before = get(store).palette.map((c) => c.hex);
+    store.overridePalette(['#000000']);
+    expect(get(store).palette.map((c) => c.hex)).toEqual(before);
+  });
+
+  it('restoreSession rebuilds the wizard state from a snapshot', async () => {
+    const store = createProjectStore(fakeRunner);
+    await store.restoreSession(
+      {
+        step: 4,
+        sourceName: 'saved.png',
+        crop: { x: 1, y: 2, w: 50, h: 70 },
+        paperFormat: { name: 'A3', width: 297, height: 420, unit: 'mm', dpi: 600 },
+        orientation: 'landscape',
+        detailLevel: 22,
+        minRegionSize: 250,
+        reduceNoise: true,
+        smoothing: 'high',
+        laserMode: 'grayscale',
+        numberOpacity: 0.5,
+        lineScale: 1.8,
+        jpgQuality: 0.8,
+        activeFilter: 'none',
+        paletteHexes: null,
+      },
+      fakeBitmap(100, 100),
+      new Blob(['x']),
+    );
+    const state = get(store);
+    expect(state.step).toBe(4);
+    expect(state.sourceName).toBe('saved.png');
+    expect(state.sourceBlob).not.toBeNull();
+    expect(state.crop).toEqual({ x: 1, y: 2, w: 50, h: 70 });
+    expect(state.paperFormat.name).toBe('A3');
+    expect(state.orientation).toBe('landscape');
+    expect(state.detailLevel).toBe(22);
+    expect(state.minRegionSize).toBe(250);
+    expect(state.reduceNoise).toBe(true);
+    expect(state.smoothing).toBe('high');
+    expect(state.laserMode).toBe('grayscale');
+    expect(state.numberOpacity).toBe(0.5);
+    expect(state.lineScale).toBe(1.8);
+    expect(state.jpgQuality).toBe(0.8);
   });
 
   it('reset returns to the initial state', () => {

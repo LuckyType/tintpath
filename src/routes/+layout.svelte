@@ -1,5 +1,7 @@
 <script lang="ts">
 import '../app.css';
+import BackgroundArt from '$lib/components/BackgroundArt.svelte';
+import GitHubLink from '$lib/components/GitHubLink.svelte';
 import { settings } from '$lib/stores/settings';
 import { dismissToast, toast, toasts } from '$lib/stores/toast';
 import type { Locale } from '$lib/types';
@@ -20,16 +22,14 @@ function toggleTheme() {
   settings.update((s) => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark' }));
 }
 
-function toggleAdvanced() {
-  settings.update((s) => ({ ...s, advancedMode: !s.advancedMode }));
-}
-
 onMount(() => {
   const onError = () => toast('error', $_('errors.generic'));
   window.addEventListener('error', onError);
   return () => window.removeEventListener('error', onError);
 });
 </script>
+
+<BackgroundArt />
 
 <div class="flex min-h-screen flex-col">
   <header
@@ -66,17 +66,7 @@ onMount(() => {
         >
           {$settings.theme === 'dark' ? '☀️' : '🌙'}
         </button>
-        <button
-          type="button"
-          class="btn-secondary !min-h-[36px] !px-3 {$settings.advancedMode
-            ? '!border-blue-500 !text-blue-600 dark:!text-blue-400'
-            : ''}"
-          on:click={toggleAdvanced}
-          aria-pressed={$settings.advancedMode}
-          title={$_('settings.advancedMode')}
-        >
-          ⚙︎
-        </button>
+        <GitHubLink />
       </div>
     </div>
   </header>
@@ -86,7 +76,7 @@ onMount(() => {
   </main>
 
   <footer
-    class="border-t border-slate-200 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400"
+    class="border-t border-slate-200 bg-white/70 py-4 text-center text-xs text-slate-500 backdrop-blur dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-400"
   >
     <p>{$_('app.privacy')}</p>
     <p class="mt-1">
@@ -97,6 +87,8 @@ onMount(() => {
         rel="noreferrer"
         target="_blank">GitHub</a
       >
+      ·
+      <a class="underline hover:text-blue-600" href="/imprint">{$_('imprint.title')}</a>
     </p>
   </footer>
 </div>

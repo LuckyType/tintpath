@@ -24,7 +24,14 @@ $: regionColorIds = state.result
   : new Map<number, number>();
 // Redraw whenever the result, palette or view toggles change
 $: if (canvas && state.result)
-  redrawOn(showFill, showNumbers, state.numberOpacity, state.palette, state.result);
+  redrawOn(
+    showFill,
+    showNumbers,
+    state.numberOpacity,
+    state.lineScale,
+    state.palette,
+    state.result,
+  );
 
 function redrawOn(..._deps: unknown[]) {
   draw();
@@ -89,7 +96,7 @@ function draw() {
     showFill,
     showNumbers,
     numberOpacity: state.numberOpacity,
-    lineWidth: 1.4 * dpr,
+    lineWidth: 1.4 * dpr * state.lineScale,
   });
 }
 
@@ -151,7 +158,7 @@ function onPointerUp(event: PointerEvent) {
 }
 
 onMount(() => {
-  if (!state.result && state.croppedImage) void project.recompute();
+  if (!state.result && state.croppedImage && !state.processing) void project.recompute();
   const observer = new ResizeObserver(() => draw());
   observer.observe(container);
   return () => observer.disconnect();
@@ -184,6 +191,22 @@ onMount(() => {
     />
     <span class="w-10 text-xs text-slate-500 dark:text-slate-400">
       {Math.round(state.numberOpacity * 100)}%
+    </span>
+  </label>
+  <label class="flex min-h-[44px] items-center gap-2 text-sm">
+    {$_('outline.lineWidth')}
+    <input
+      type="range"
+      min="50"
+      max="250"
+      step="10"
+      class="w-24 accent-blue-600 sm:w-32"
+      value={Math.round(state.lineScale * 100)}
+      aria-valuetext="{Math.round(state.lineScale * 100)}%"
+      on:input={(e) => project.setLineScale(Number(e.currentTarget.value) / 100)}
+    />
+    <span class="w-10 text-xs text-slate-500 dark:text-slate-400">
+      {Math.round(state.lineScale * 100)}%
     </span>
   </label>
   <div class="ml-auto flex gap-2">

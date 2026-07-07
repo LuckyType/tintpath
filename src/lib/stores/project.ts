@@ -1,8 +1,16 @@
 import { type Readable, get, writable } from 'svelte/store';
 import { makePaperFormat, paperAspect } from '../paper';
 import { applyFilter, swapColor } from '../pipeline/palette';
+import { rgbToLab } from '../pipeline/quantize';
 import { type PipelineRunner, runPipeline } from '../pipeline/runner';
-import type { CropRegion, Orientation, PaletteFilter, PaperFormat, ProjectState } from '../types';
+import type {
+  CropRegion,
+  Orientation,
+  PaletteFilter,
+  PaperFormat,
+  ProjectState,
+  Smoothing,
+} from '../types';
 
 export const TOTAL_STEPS = 6;
 /** Pipeline input is capped to keep recomputes interactive. */
@@ -12,6 +20,7 @@ function initialState(): ProjectState {
   return {
     step: 1,
     sourceImage: null,
+    sourceBlob: null,
     sourceName: '',
     crop: null,
     paperFormat: makePaperFormat('A4'),
@@ -19,6 +28,7 @@ function initialState(): ProjectState {
     detailLevel: 15,
     minRegionSize: 100,
     reduceNoise: false,
+    smoothing: 'medium',
     croppedImage: null,
     croppedSignature: '',
     result: null,
@@ -27,6 +37,8 @@ function initialState(): ProjectState {
     activeFilter: 'none',
     laserMode: 'outline',
     numberOpacity: 0.9,
+    lineScale: 1,
+    jpgQuality: 0.92,
     processing: false,
     error: null,
   };
@@ -43,21 +55,45 @@ export function defaultCrop(imageWidth: number, imageHeight: number, aspect: num
   return { x: (imageWidth - w) / 2, y: (imageHeight - h) / 2, w, h };
 }
 
+/** The subset of state that session persistence stores and restores. */
+export interface SessionSnapshot {
+  step: number;
+  sourceName: string;
+  crop: CropRegion | null;
+  paperFormat: PaperFormat;
+  orientation: Orientation;
+  detailLevel: number;
+  minRegionSize: number;
+  reduceNoise: boolean;
+  smoothing: Smoothing;
+  laserMode: ProjectState['laserMode'];
+  numberOpacity: number;
+  lineScale: number;
+  jpgQuality: number;
+  activeFilter: PaletteFilter;
+  paletteHexes: string[] | null;
+}
+
 export interface ProjectStore extends Readable<ProjectState> {
-  setImage(image: ImageBitmap, name: string): void;
+  setImage(image: ImageBitmap, name: string, blob?: Blob | null): void;
   setCrop(crop: CropRegion): void;
   setPaperFormat(format: PaperFormat): void;
   setOrientation(orientation: Orientation): void;
   setDetailLevel(value: number): void;
   setMinRegionSize(value: number): void;
   setReduceNoise(value: boolean): void;
+  setSmoothing(value: Smoothing): void;
   setLaserMode(mode: ProjectState['laserMode']): void;
   setNumberOpacity(value: number): void;
+  setLineScale(value: number): void;
+  setJpgQuality(value: number): void;
   setCroppedImage(image: ImageData, signature?: string): void;
   applyCrop(): void;
   recompute(): Promise<void>;
   applyPaletteFilter(filter: PaletteFilter): void;
   swapPaletteColor(colorId: number, hex: string): void;
+  overridePalette(hexes: string[]): void;
+  restoreSession(snapshot: SessionSnapshot, image: ImageBitmap, blob: Blob): Promise<void>;
   nextStep(): void;
   prevStep(): void;
   goToStep(step: number): void;
@@ -90,6 +126,26 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
     }));
   }
 
+  function applyCrop(): void {
+    const s = get(store);
+    if (!s.sourceImage || !s.crop || typeof document === 'undefined') return;
+    const cw = Math.max(1, Math.round(s.crop.w));
+    const ch = Math.max(1, Math.round(s.crop.h));
+    const scale = Math.min(1, MAX_PIPELINE_SIDE / Math.max(cw, ch));
+    const tw = Math.max(1, Math.round(cw * scale));
+    const th = Math.max(1, Math.round(ch * scale));
+    const signature = `${Math.round(s.crop.x)},${Math.round(s.crop.y)},${cw},${ch}@${tw}x${th}`;
+    if (signature === s.croppedSignature && s.croppedImage) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = tw;
+    canvas.height = th;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+    ctx.drawImage(s.sourceImage, s.crop.x, s.crop.y, cw, ch, 0, 0, tw, th);
+    setCroppedImage(ctx.getImageData(0, 0, tw, th), signature);
+  }
+
   async function recompute(): Promise<void> {
     const state = get(store);
     if (!state.croppedImage) return;
@@ -100,6 +156,7 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
         detailLevel: state.detailLevel,
         minRegionSize: state.minRegionSize,
         reduceNoise: state.reduceNoise,
+        smoothing: state.smoothing,
       });
       if (result === null) return; // superseded by a newer run
       update((s) => ({
@@ -119,10 +176,40 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
     }
   }
 
+  function applyPaletteFilterFn(filter: PaletteFilter): void {
+    update((s) => ({
+      ...s,
+      activeFilter: filter,
+      palette: applyFilter(s.basePalette, filter),
+    }));
+  }
+
+  /** Replace all palette colors by hex value (used when restoring a session). */
+  function overridePalette(hexes: string[]): void {
+    update((s) => {
+      if (s.palette.length === 0 || hexes.length !== s.palette.length) return s;
+      const palette = s.palette.map((color, i) => {
+        const hex = hexes[i]?.toLowerCase();
+        if (!hex || hex === color.hex) return color;
+        const r = Number.parseInt(hex.slice(1, 3), 16);
+        const g = Number.parseInt(hex.slice(3, 5), 16);
+        const b = Number.parseInt(hex.slice(5, 7), 16);
+        if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return color;
+        return {
+          id: color.id,
+          rgb: [r, g, b] as [number, number, number],
+          lab: rgbToLab(r, g, b),
+          hex,
+        };
+      });
+      return { ...s, palette, basePalette: palette };
+    });
+  }
+
   return {
     subscribe,
 
-    setImage(image, name) {
+    setImage(image, name, blob = null) {
       update((s) => {
         const next: ProjectState = {
           ...initialState(),
@@ -131,9 +218,13 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
           detailLevel: s.detailLevel,
           minRegionSize: s.minRegionSize,
           reduceNoise: s.reduceNoise,
+          smoothing: s.smoothing,
           laserMode: s.laserMode,
           numberOpacity: s.numberOpacity,
+          lineScale: s.lineScale,
+          jpgQuality: s.jpgQuality,
           sourceImage: image,
+          sourceBlob: blob,
           sourceName: name,
           step: 2,
         };
@@ -165,6 +256,10 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
       update((s) => ({ ...s, reduceNoise: value }));
     },
 
+    setSmoothing(value) {
+      update((s) => ({ ...s, smoothing: value }));
+    },
+
     setLaserMode(mode) {
       update((s) => ({ ...s, laserMode: mode }));
     },
@@ -173,41 +268,25 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
       update((s) => ({ ...s, numberOpacity: Math.max(0, Math.min(1, value)) }));
     },
 
+    setLineScale(value) {
+      update((s) => ({ ...s, lineScale: Math.max(0.5, Math.min(2.5, value)) }));
+    },
+
+    setJpgQuality(value) {
+      update((s) => ({ ...s, jpgQuality: Math.max(0.5, Math.min(1, value)) }));
+    },
+
     setCroppedImage,
 
     /**
      * Rasterize the crop region into pipeline input. Skips work (and keeps
      * the existing result) when the crop hasn't changed since the last call.
      */
-    applyCrop() {
-      const s = get(store);
-      if (!s.sourceImage || !s.crop || typeof document === 'undefined') return;
-      const cw = Math.max(1, Math.round(s.crop.w));
-      const ch = Math.max(1, Math.round(s.crop.h));
-      const scale = Math.min(1, MAX_PIPELINE_SIDE / Math.max(cw, ch));
-      const tw = Math.max(1, Math.round(cw * scale));
-      const th = Math.max(1, Math.round(ch * scale));
-      const signature = `${Math.round(s.crop.x)},${Math.round(s.crop.y)},${cw},${ch}@${tw}x${th}`;
-      if (signature === s.croppedSignature && s.croppedImage) return;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = tw;
-      canvas.height = th;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      if (!ctx) return;
-      ctx.drawImage(s.sourceImage, s.crop.x, s.crop.y, cw, ch, 0, 0, tw, th);
-      setCroppedImage(ctx.getImageData(0, 0, tw, th), signature);
-    },
+    applyCrop,
 
     recompute,
 
-    applyPaletteFilter(filter) {
-      update((s) => ({
-        ...s,
-        activeFilter: filter,
-        palette: applyFilter(s.basePalette, filter),
-      }));
-    },
+    applyPaletteFilter: applyPaletteFilterFn,
 
     swapPaletteColor(colorId, hex) {
       update((s) => {
@@ -215,6 +294,46 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
         // Manual swaps become the new baseline so filters start from them.
         return { ...s, palette, basePalette: palette, activeFilter: 'none' };
       });
+    },
+
+    overridePalette,
+
+    /**
+     * Rebuild the full state from a saved session: the pipeline is
+     * deterministic, so recomputing with the same parameters reproduces the
+     * same regions; saved palette edits are re-applied on top by hex.
+     */
+    async restoreSession(snapshot, image, blob) {
+      update(() => ({
+        ...initialState(),
+        sourceImage: image,
+        sourceBlob: blob,
+        sourceName: snapshot.sourceName,
+        crop: snapshot.crop,
+        paperFormat: snapshot.paperFormat,
+        orientation: snapshot.orientation,
+        detailLevel: snapshot.detailLevel,
+        minRegionSize: snapshot.minRegionSize,
+        reduceNoise: snapshot.reduceNoise,
+        smoothing: snapshot.smoothing,
+        laserMode: snapshot.laserMode,
+        numberOpacity: snapshot.numberOpacity,
+        lineScale: snapshot.lineScale,
+        jpgQuality: snapshot.jpgQuality,
+        step: Math.max(2, Math.min(TOTAL_STEPS, snapshot.step)),
+      }));
+      if (!get(store).crop) {
+        update((s) => resetCropToAspect(s));
+      }
+      applyCrop();
+      await recompute();
+      // Invariant: a non-'none' filter means the palette is a pure transform
+      // of the base; otherwise saved hexes carry the user's manual swaps.
+      if (snapshot.activeFilter !== 'none') {
+        applyPaletteFilterFn(snapshot.activeFilter);
+      } else if (snapshot.paletteHexes) {
+        overridePalette(snapshot.paletteHexes);
+      }
     },
 
     nextStep() {

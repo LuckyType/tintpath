@@ -25,7 +25,11 @@
     "formats": "JPG, PNG or WEBP · up to 4000×4000 px",
     "errorFormat": "Please use a JPG, PNG or WEBP image.",
     "errorLoad": "The image could not be loaded.",
-    "confirmLarge": "This file is larger than 50 MB and may be slow to process. Load it anyway?"
+    "confirmLarge": "This file is larger than 50 MB and may be slow to process. Load it anyway?",
+    "resumeTitle": "Pick up where you left off?",
+    "resumeSavedAt": "saved {date}",
+    "resume": "Resume",
+    "discard": "Discard"
   },
   "crop": {
     "title": "Crop your image and pick a paper size",
@@ -47,6 +51,11 @@
     "minRegionHint": "Smaller regions are merged into the most similar neighbor.",
     "reduceNoise": "Reduce noise",
     "reduceNoiseHint": "Removes single-pixel artifacts before merging.",
+    "smoothing": "Outline smoothing",
+    "smoothingLow": "Low (more detail)",
+    "smoothingMedium": "Medium",
+    "smoothingHigh": "High (smoother)",
+    "smoothingHint": "How strongly the traced outlines are simplified.",
     "stats": "{colors} colors, {regions} regions",
     "original": "Original",
     "quantized": "Preview",
@@ -57,6 +66,7 @@
     "showColors": "Show colors",
     "showNumbers": "Show numbers",
     "numberOpacity": "Number opacity",
+    "lineWidth": "Line thickness",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "fit": "Fit to view",
@@ -71,6 +81,12 @@
     "filterVintage": "Vintage",
     "filterHighContrast": "High contrast",
     "filterGrayscale": "Grayscale",
+    "filterNeon": "Neon",
+    "filterSynthwave": "Synthwave",
+    "filterAnaglyph": "3D Retro",
+    "filterPopArt": "Pop Art",
+    "filterOcean": "Ocean",
+    "filterSunset": "Sunset",
     "colorNumber": "Color {number}"
   },
   "export": {
@@ -92,6 +108,7 @@
     "laserLayerPerColor": "Layer per color",
     "laserGrayscale": "Grayscale (variable power)",
     "resolution": "Resolution",
+    "jpgQuality": "JPG quality",
     "legendTitle": "Color legend",
     "success": "Export ready — check your downloads.",
     "error": "Export failed. Please try again.",
@@ -104,7 +121,17 @@
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
-    "advancedMode": "Advanced mode"
+    "advancedMode": "Advanced options"
+  },
+  "imprint": {
+    "title": "Imprint",
+    "contactHeading": "Site operator",
+    "contactBody": "[Your name]\n[Street and number]\n[Postal code, city]\n[Country]\nEmail: [your@email.example]\n\nReplace this placeholder with your details before publishing the site.",
+    "privacyHeading": "Privacy",
+    "privacyBody": "Tintpath runs entirely in your browser. Images are processed locally and are never uploaded to a server.\n\nUI preferences and — if you use it — the resume feature store data only on this device (localStorage / IndexedDB). Use “Start over” or “Discard” to delete it at any time.\n\nThe star counter in the header queries the public GitHub API; no personal data is transmitted.",
+    "disclaimerHeading": "Disclaimer",
+    "disclaimerBody": "This is a free, open-source tool provided “as is”, without warranty of any kind. External links lead to third-party content for which the respective operators are responsible.",
+    "backToApp": "Back to the app"
   },
   "errors": {
     "pipeline": "Processing failed. Try a smaller image or fewer colors.",

@@ -30,6 +30,8 @@ export interface RasterExportParams {
   showFill?: boolean;
   showNumbers?: boolean;
   numberOpacity?: number;
+  lineScale?: number;
+  quality?: number;
 }
 
 /** Render the template onto a print-resolution canvas. */
@@ -53,7 +55,7 @@ export function renderTemplateCanvas(params: RasterExportParams): HTMLCanvasElem
     showFill: params.showFill ?? false,
     showNumbers: params.showNumbers ?? true,
     numberOpacity: params.numberOpacity ?? 1,
-    lineWidth: Math.max(1.2, scale * 0.8),
+    lineWidth: Math.max(1.2, scale * 0.8) * (params.lineScale ?? 1),
   });
   return canvas;
 }
@@ -64,7 +66,7 @@ export async function exportRaster(
   const canvas = renderTemplateCanvas(params);
   return params.kind === 'png'
     ? canvasToBlob(canvas, 'image/png')
-    : canvasToBlob(canvas, 'image/jpeg', 0.92);
+    : canvasToBlob(canvas, 'image/jpeg', params.quality ?? 0.92);
 }
 
 /** Grayscale raster for single-pass variable-power laser engraving. */

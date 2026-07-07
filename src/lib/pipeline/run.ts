@@ -37,7 +37,9 @@ export function runPipelineSync(
   // Largest regions first: painting order for filled exports and stable numbering
   regions.sort((a, b) => b.area - a.area);
 
-  const epsilon = epsilonForSize(width, height);
+  // Smoothing preference scales the Douglas-Peucker tolerance
+  const smoothingFactor = params.smoothing === 'low' ? 0.5 : params.smoothing === 'high' ? 2 : 1;
+  const epsilon = epsilonForSize(width, height) * smoothingFactor;
   const outlines = extractOutlines(regionMap, width, height, regions).map((o) => ({
     regionId: o.regionId,
     points: simplifyClosed(o.points, epsilon),

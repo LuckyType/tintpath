@@ -1,4 +1,5 @@
 <script lang="ts">
+import { applyFilter } from '$lib/pipeline/palette';
 import { buildRegionColorMap, drawTemplate } from '$lib/render';
 import { project } from '$lib/stores/project';
 import type { PaletteFilter } from '$lib/types';
@@ -14,9 +15,18 @@ const filters: { id: PaletteFilter; labelKey: string }[] = [
   { id: 'vintage', labelKey: 'colors.filterVintage' },
   { id: 'high-contrast', labelKey: 'colors.filterHighContrast' },
   { id: 'grayscale', labelKey: 'colors.filterGrayscale' },
+  { id: 'neon', labelKey: 'colors.filterNeon' },
+  { id: 'synthwave', labelKey: 'colors.filterSynthwave' },
+  { id: 'anaglyph', labelKey: 'colors.filterAnaglyph' },
+  { id: 'pop-art', labelKey: 'colors.filterPopArt' },
+  { id: 'ocean', labelKey: 'colors.filterOcean' },
+  { id: 'sunset', labelKey: 'colors.filterSunset' },
 ];
 
 $: state = $project;
+// Four-dot preview of what each filter would do to the current palette
+$: previewBase = state.basePalette.slice(0, 4);
+$: previews = new Map(filters.map((f) => [f.id, applyFilter(previewBase, f.id)]));
 $: if (canvas && state.result) redrawOn(state.palette, state.result);
 
 function redrawOn(..._deps: unknown[]) {
@@ -55,7 +65,7 @@ function onSwap(colorId: number, event: Event) {
 }
 
 onMount(() => {
-  if (!state.result && state.croppedImage) void project.recompute();
+  if (!state.result && state.croppedImage && !state.processing) void project.recompute();
   const observer = new ResizeObserver(() => draw());
   observer.observe(container);
   return () => observer.disconnect();
@@ -77,13 +87,21 @@ onMount(() => {
         {#each filters as filter (filter.id)}
           <button
             type="button"
-            class="btn-secondary {state.activeFilter === filter.id
+            class="btn-secondary flex-col !gap-1 !py-1.5 {state.activeFilter === filter.id
               ? '!border-blue-500 !text-blue-600 dark:!text-blue-400'
               : ''}"
             aria-pressed={state.activeFilter === filter.id}
             on:click={() => project.applyPaletteFilter(filter.id)}
           >
-            {$_(filter.labelKey)}
+            <span>{$_(filter.labelKey)}</span>
+            <span class="flex gap-0.5" aria-hidden="true">
+              {#each previews.get(filter.id) ?? [] as dot (dot.id)}
+                <span
+                  class="h-2 w-2 rounded-full border border-black/10"
+                  style="background: {dot.hex}"
+                ></span>
+              {/each}
+            </span>
           </button>
         {/each}
       </div>

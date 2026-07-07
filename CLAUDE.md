@@ -608,20 +608,23 @@ type LaserMode = 'outline' | 'layer-per-color' | 'grayscale';
 
 ## 11. State Persistence
 
-### Prinzip: Keine persistente Speicherung (Privacy by Design)
-- **Keine Bilder, keine Label-Maps, keine Paletten** werden gespeichert
-- Refresh = Session weg (bewusst, schützt Privatsphäre)
-- Keine IndexedDB, keine LocalStorage für Bilddaten
+### Prinzip: Alles bleibt auf dem Gerät (Privacy by Design)
+- **Keine Server, keine Uploads** — Persistenz ausschließlich lokal
+- PWA Service Worker cached nur static assets (HTML/CSS/JS), keine Nutzerdaten
 
-### Ausnahme: UI-Settings (localStorage)
-- **Erlaubt:** `locale` (Sprache), `theme` (light/dark), `advancedMode` (bool)
-- **Nicht erlaubt:** Source-Bild, Pipeline-State, Farbpaletten
+### UI-Settings (localStorage)
+- `locale` (Sprache), `theme` (light/dark), `advancedMode` (bool)
 - localStorage Key: `tintpath:settings`, Wert als JSON
 
-### Begründung
-- Bilder könnten privat sein → nie client-statele persistence
-- UI-Settings sind harmlos → localStorage ok
-- PWA Service Worker cached nur static assets (HTML/CSS/JS), keine Nutzerdaten
+### Session-Resume (IndexedDB) — Entscheidung 2026-07
+- Die aktuelle Session (Original-Bild als Blob + alle Wizard-Parameter +
+  Paletten-Anpassungen) wird debounced in IndexedDB (`tintpath`/`session`)
+  gespeichert, damit User nach einem Refresh weitermachen können
+- Pipeline-Ergebnisse (labelMap etc.) werden NICHT gespeichert — die Pipeline
+  ist deterministisch (fester Seed) und rechnet beim Restore identisch neu
+- Beim Start zeigt Step 1 ein "Fortsetzen?"-Banner mit Resume/Verwerfen
+- "Neu starten" und "Verwerfen" löschen die gespeicherte Session
+- Alles bleibt auf dem Gerät; nichts wird übertragen
 
 ---
 
