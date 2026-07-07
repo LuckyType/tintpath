@@ -1,7 +1,7 @@
 import type { PipelineParams, PipelineResult } from '../types';
 import { computePlacements } from './numbering';
 import { extractOutlines, findRegions, mergeSmallRegions, reduceNoiseFilter } from './outline';
-import { compactPalette, quantize } from './quantize';
+import { compactPalette, hexToRgb, quantize, quantizeToPalette } from './quantize';
 import { simplifyClosed } from './simplify';
 
 /** Douglas-Peucker tolerance scaled with image size (1-3 px). */
@@ -21,10 +21,17 @@ export function runPipelineSync(
   height: number,
   params: PipelineParams,
 ): PipelineResult {
-  const quantized = quantize(pixels, width, height, {
-    k: params.detailLevel,
-    seed: params.seed ?? 1,
-  });
+  // A fixed user palette (>= 2 valid colors) bypasses k-means entirely
+  const fixedRgb = (params.fixedPalette ?? [])
+    .map(hexToRgb)
+    .filter((rgb): rgb is [number, number, number] => rgb !== null);
+  const quantized =
+    fixedRgb.length >= 2
+      ? quantizeToPalette(pixels, width, height, fixedRgb)
+      : quantize(pixels, width, height, {
+          k: params.detailLevel,
+          seed: params.seed ?? 1,
+        });
 
   let labelMap = quantized.labelMap;
   if (params.reduceNoise) {

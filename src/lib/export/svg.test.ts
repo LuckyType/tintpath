@@ -97,6 +97,40 @@ describe('generateSvg', () => {
     expect(svg.indexOf('rgb(255,255,255)')).toBeLessThan(svg.indexOf('rgb(0,0,0)'));
   });
 
+  it('adds a numbers layer with text elements when requested', () => {
+    const placements = [
+      { regionId: 0, colorId: 0, number: 1, x: 4, y: 5, fontSize: 10 },
+      { regionId: 1, colorId: 1, number: 2, x: 3, y: 3, fontSize: 8 },
+    ];
+    const svg = generateSvg({
+      outlines: [square, smallSquare],
+      regions,
+      palette,
+      width: 10,
+      height: 10,
+      mode: 'outline',
+      placements,
+      includeNumbers: true,
+    });
+    expect(svg).toContain('<g id="numbers"');
+    expect(svg).toContain('>1</text>');
+    expect(svg).toContain('>2</text>');
+    expect(svg).toContain('font-size="10"');
+  });
+
+  it('omits the numbers layer by default', () => {
+    const svg = generateSvg({
+      outlines: [square],
+      regions,
+      palette,
+      width: 10,
+      height: 10,
+      mode: 'outline',
+      placements: [{ regionId: 0, colorId: 0, number: 1, x: 4, y: 5, fontSize: 10 }],
+    });
+    expect(svg).not.toContain('<text');
+  });
+
   it('produces a valid empty SVG for zero regions', () => {
     const svg = generateSvg({
       outlines: [],

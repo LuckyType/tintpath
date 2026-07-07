@@ -1,4 +1,5 @@
 import { type Readable, get, writable } from 'svelte/store';
+import { rotateBitmap } from '../image';
 import { makePaperFormat, paperAspect } from '../paper';
 import { applyFilter, swapColor } from '../pipeline/palette';
 import { rgbToLab } from '../pipeline/quantize';
@@ -22,6 +23,7 @@ function initialState(): ProjectState {
     sourceImage: null,
     sourceBlob: null,
     sourceName: '',
+    rotation: 0,
     crop: null,
     paperFormat: makePaperFormat('A4'),
     orientation: 'portrait',
@@ -39,6 +41,7 @@ function initialState(): ProjectState {
     numberOpacity: 0.9,
     lineScale: 1,
     jpgQuality: 0.92,
+    customPalette: null,
     processing: false,
     error: null,
   };
@@ -59,6 +62,7 @@ export function defaultCrop(imageWidth: number, imageHeight: number, aspect: num
 export interface SessionSnapshot {
   step: number;
   sourceName: string;
+  rotation: number;
   crop: CropRegion | null;
   paperFormat: PaperFormat;
   orientation: Orientation;
@@ -72,6 +76,7 @@ export interface SessionSnapshot {
   jpgQuality: number;
   activeFilter: PaletteFilter;
   paletteHexes: string[] | null;
+  customPalette: string[] | null;
 }
 
 export interface ProjectStore extends Readable<ProjectState> {
@@ -87,6 +92,8 @@ export interface ProjectStore extends Readable<ProjectState> {
   setNumberOpacity(value: number): void;
   setLineScale(value: number): void;
   setJpgQuality(value: number): void;
+  setCustomPalette(hexes: string[] | null): void;
+  rotateImage(direction: 1 | -1): Promise<void>;
   setCroppedImage(image: ImageData, signature?: string): void;
   applyCrop(): void;
   recompute(): Promise<void>;
@@ -157,6 +164,7 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
         minRegionSize: state.minRegionSize,
         reduceNoise: state.reduceNoise,
         smoothing: state.smoothing,
+        fixedPalette: state.customPalette ?? undefined,
       });
       if (result === null) return; // superseded by a newer run
       update((s) => ({
@@ -223,6 +231,7 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
           numberOpacity: s.numberOpacity,
           lineScale: s.lineScale,
           jpgQuality: s.jpgQuality,
+          customPalette: s.customPalette,
           sourceImage: image,
           sourceBlob: blob,
           sourceName: name,
@@ -276,6 +285,31 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
       update((s) => ({ ...s, jpgQuality: Math.max(0.5, Math.min(1, value)) }));
     },
 
+    setCustomPalette(hexes) {
+      const valid = hexes?.filter((h) => /^#[0-9a-fA-F]{6}$/.test(h)).map((h) => h.toLowerCase());
+      update((s) => ({ ...s, customPalette: valid && valid.length > 0 ? valid : null }));
+    },
+
+    /** Rotate the source image in quarter turns; resets crop to the new aspect. */
+    async rotateImage(direction) {
+      const s = get(store);
+      if (!s.sourceImage || typeof document === 'undefined') return;
+      const rotated = await rotateBitmap(s.sourceImage, direction);
+      update((st) =>
+        resetCropToAspect({
+          ...st,
+          sourceImage: rotated,
+          rotation: (st.rotation + direction * 90 + 360) % 360,
+          croppedImage: null,
+          croppedSignature: '',
+          result: null,
+          basePalette: [],
+          palette: [],
+          activeFilter: 'none',
+        }),
+      );
+    },
+
     setCroppedImage,
 
     /**
@@ -309,6 +343,7 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
         sourceImage: image,
         sourceBlob: blob,
         sourceName: snapshot.sourceName,
+        rotation: snapshot.rotation ?? 0,
         crop: snapshot.crop,
         paperFormat: snapshot.paperFormat,
         orientation: snapshot.orientation,
@@ -320,6 +355,7 @@ export function createProjectStore(runner: PipelineRunner = runPipeline): Projec
         numberOpacity: snapshot.numberOpacity,
         lineScale: snapshot.lineScale,
         jpgQuality: snapshot.jpgQuality,
+        customPalette: snapshot.customPalette ?? null,
         step: Math.max(2, Math.min(TOTAL_STEPS, snapshot.step)),
       }));
       if (!get(store).crop) {

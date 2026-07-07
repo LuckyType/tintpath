@@ -51,6 +51,16 @@ describe('layoutLegend', () => {
     }
   });
 
+  it('shifts rows below a larger header space', () => {
+    const compact = layoutLegend(palette(5), A4.width, A4.height, margin, 15);
+    const spacious = layoutLegend(palette(5), A4.width, A4.height, margin, 60);
+    expect(spacious.entries[0].y).toBeGreaterThan(compact.entries[0].y);
+    for (const entry of spacious.entries) {
+      expect(entry.y).toBeGreaterThanOrEqual(margin + 60);
+      expect(entry.y).toBeLessThanOrEqual(A4.height - margin);
+    }
+  });
+
   it('handles an empty palette', () => {
     const layout = layoutLegend([], A4.width, A4.height, margin);
     expect(layout.pageCount).toBe(1);

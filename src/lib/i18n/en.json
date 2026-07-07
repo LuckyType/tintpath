@@ -29,7 +29,8 @@
     "resumeTitle": "Pick up where you left off?",
     "resumeSavedAt": "saved {date}",
     "resume": "Resume",
-    "discard": "Discard"
+    "discard": "Discard",
+    "sample": "No photo handy? Try the sample image"
   },
   "crop": {
     "title": "Crop your image and pick a paper size",
@@ -41,7 +42,9 @@
     "widthMm": "Width (mm)",
     "heightMm": "Height (mm)",
     "reset": "Reset crop",
-    "hint": "Drag the frame to move it, drag a corner to resize. The aspect ratio follows the paper size."
+    "hint": "Drag the frame to move it, drag a corner to resize. The aspect ratio follows the paper size.",
+    "rotateLeft": "Rotate left",
+    "rotateRight": "Rotate right"
   },
   "detail": {
     "title": "Choose the level of detail",
@@ -59,7 +62,11 @@
     "stats": "{colors} colors, {regions} regions",
     "original": "Original",
     "quantized": "Preview",
-    "processing": "Computing…"
+    "processing": "Computing…",
+    "customPalette": "Use my own colors",
+    "customPaletteHint": "Match the paints you own — the color slider is ignored.",
+    "addColor": "Add color",
+    "removeColor": "Remove color"
   },
   "outline": {
     "title": "Inspect the outlines",
@@ -114,7 +121,9 @@
     "error": "Export failed. Please try again.",
     "exporting": "Exporting…",
     "withColors": "Fill with colors",
-    "withNumbers": "Include numbers"
+    "withNumbers": "Include numbers",
+    "svgNumbers": "Include numbers in SVG",
+    "svgNumbersHint": "Added as text elements — convert to paths in your laser software if needed."
   },
   "settings": {
     "language": "Language",

@@ -20,6 +20,7 @@ let modal: PreviewModal;
 let busy: string | null = null;
 let withColors = false;
 let withNumbers = true;
+let svgNumbers = false;
 
 $: state = $project;
 $: baseName = (state.sourceName.replace(/\.[^.]+$/, '') || 'tintpath').slice(0, 40);
@@ -136,6 +137,8 @@ const exportSvgFile = () =>
       width: result.width,
       height: result.height,
       mode: state.laserMode,
+      placements: result.placements,
+      includeNumbers: svgNumbers && state.laserMode !== 'grayscale',
     });
     downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `${baseName}-laser.svg`);
   });
@@ -311,6 +314,15 @@ onMount(() => {
           <option value="grayscale">{$_('export.laserGrayscale')}</option>
         </select>
       </div>
+      {#if state.laserMode !== 'grayscale'}
+        <label class="flex min-h-[44px] items-center gap-2 text-sm">
+          <input type="checkbox" class="h-5 w-5 accent-blue-600" bind:checked={svgNumbers} />
+          <span>
+            {$_('export.svgNumbers')}
+            <span class="block text-xs text-slate-500">{$_('export.svgNumbersHint')}</span>
+          </span>
+        </label>
+      {/if}
       <div class="grid grid-cols-2 gap-2">
         <button type="button" class="btn-secondary" disabled={busy !== null} on:click={exportSvgFile}>
           <Download class="h-4 w-4" aria-hidden="true" />

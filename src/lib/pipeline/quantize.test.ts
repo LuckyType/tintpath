@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { compactPalette, deltaE, labToRgb, makeColor, quantize, rgbToLab } from './quantize';
+import {
+  compactPalette,
+  deltaE,
+  hexToRgb,
+  labToRgb,
+  makeColor,
+  quantize,
+  quantizeToPalette,
+  rgbToLab,
+} from './quantize';
 
 function buildImage(
   width: number,
@@ -114,6 +123,54 @@ describe('quantize', () => {
     const b = quantize(pixels, 12, 12, { k: 4, sampleStride: 1 });
     expect([...a.labelMap]).toEqual([...b.labelMap]);
     expect(a.palette.map((c) => c.hex)).toEqual(b.palette.map((c) => c.hex));
+  });
+});
+
+describe('hexToRgb', () => {
+  it('parses hex with and without a leading #', () => {
+    expect(hexToRgb('#ff8800')).toEqual([255, 136, 0]);
+    expect(hexToRgb('00ff00')).toEqual([0, 255, 0]);
+  });
+
+  it('rejects invalid values', () => {
+    expect(hexToRgb('#zzzzzz')).toBeNull();
+    expect(hexToRgb('#fff')).toBeNull();
+    expect(hexToRgb('')).toBeNull();
+  });
+});
+
+describe('quantizeToPalette', () => {
+  it('maps every pixel to the nearest of the fixed colors', () => {
+    const width = 8;
+    const height = 8;
+    // Left half dark red-ish, right half light blue-ish
+    const pixels = buildImage(width, height, (x) => (x < 4 ? [180, 40, 40] : [80, 110, 220]));
+    const fixed: [number, number, number][] = [
+      [255, 0, 0],
+      [0, 0, 255],
+      [0, 255, 0], // never nearest -> must be dropped
+    ];
+    const { labelMap, palette } = quantizeToPalette(pixels, width, height, fixed);
+    expect(palette).toHaveLength(2);
+    // Exact user colors are kept, not re-averaged
+    const hexes = palette.map((c) => c.hex).sort();
+    expect(hexes).toEqual(['#0000ff', '#ff0000']);
+    const leftLabel = labelMap[0];
+    const rightLabel = labelMap[width - 1];
+    expect(leftLabel).not.toBe(rightLabel);
+    expect(palette[leftLabel].hex).toBe('#ff0000');
+    expect(palette[rightLabel].hex).toBe('#0000ff');
+  });
+
+  it('keeps label indices consistent with the compacted palette', () => {
+    const pixels = buildImage(4, 1, () => [10, 10, 10]);
+    const { labelMap, palette } = quantizeToPalette(pixels, 4, 1, [
+      [255, 255, 255],
+      [0, 0, 0],
+    ]);
+    expect(palette).toHaveLength(1);
+    expect(palette[0].hex).toBe('#000000');
+    expect([...labelMap]).toEqual([0, 0, 0, 0]);
   });
 });
 

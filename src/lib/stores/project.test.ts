@@ -44,6 +44,8 @@ describe('project store', () => {
     expect(state.lineScale).toBe(1);
     expect(state.jpgQuality).toBe(0.92);
     expect(state.numberOpacity).toBe(0.9);
+    expect(state.rotation).toBe(0);
+    expect(state.customPalette).toBeNull();
     expect(state.result).toBeNull();
   });
 
@@ -151,6 +153,49 @@ describe('project store', () => {
     expect(state.activeFilter).toBe('none');
   });
 
+  it('setCustomPalette validates hexes and recompute forwards them to the runner', async () => {
+    let received: string[] | undefined;
+    const store = createProjectStore((image, params) => {
+      received = params.fixedPalette;
+      return Promise.resolve(fakeResult());
+    });
+    store.setCustomPalette(['#FF0000', 'not-a-color', '#00ff00']);
+    expect(get(store).customPalette).toEqual(['#ff0000', '#00ff00']);
+    store.setCroppedImage(fakeImageData());
+    await store.recompute();
+    expect(received).toEqual(['#ff0000', '#00ff00']);
+
+    store.setCustomPalette(null);
+    expect(get(store).customPalette).toBeNull();
+    await store.recompute();
+    expect(received).toBeUndefined();
+  });
+
+  it('quantizes to the custom palette end-to-end', async () => {
+    const realRunner: PipelineRunner = (image, params) =>
+      Promise.resolve(runPipelineSync(image.data, image.width, image.height, params));
+    const store = createProjectStore(realRunner);
+    const width = 8;
+    const height = 8;
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let p = 0; p < width * height; p++) {
+      const x = p % width;
+      const [r, g, b] = x < width / 2 ? [190, 30, 30] : [40, 40, 200];
+      data[p * 4] = r;
+      data[p * 4 + 1] = g;
+      data[p * 4 + 2] = b;
+      data[p * 4 + 3] = 255;
+    }
+    store.setCroppedImage({ data, width, height } as unknown as ImageData);
+    store.setCustomPalette(['#ff0000', '#0000ff', '#00ff00']);
+    store.setMinRegionSize(10);
+    await store.recompute();
+    const state = get(store);
+    expect(state.result).not.toBeNull();
+    const hexes = state.palette.map((c) => c.hex).sort();
+    expect(hexes).toEqual(['#0000ff', '#ff0000']);
+  });
+
   it('overridePalette replaces colors by hex and updates the baseline', async () => {
     const store = createProjectStore(fakeRunner);
     store.setCroppedImage(fakeImageData());
@@ -177,6 +222,7 @@ describe('project store', () => {
       {
         step: 4,
         sourceName: 'saved.png',
+        rotation: 90,
         crop: { x: 1, y: 2, w: 50, h: 70 },
         paperFormat: { name: 'A3', width: 297, height: 420, unit: 'mm', dpi: 600 },
         orientation: 'landscape',
@@ -190,6 +236,7 @@ describe('project store', () => {
         jpgQuality: 0.8,
         activeFilter: 'none',
         paletteHexes: null,
+        customPalette: ['#112233', '#445566'],
       },
       fakeBitmap(100, 100),
       new Blob(['x']),
@@ -209,6 +256,8 @@ describe('project store', () => {
     expect(state.numberOpacity).toBe(0.5);
     expect(state.lineScale).toBe(1.8);
     expect(state.jpgQuality).toBe(0.8);
+    expect(state.rotation).toBe(90);
+    expect(state.customPalette).toEqual(['#112233', '#445566']);
   });
 
   it('reset returns to the initial state', () => {

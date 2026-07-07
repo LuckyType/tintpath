@@ -69,6 +69,8 @@ export interface PipelineParams {
   minRegionSize: number;
   reduceNoise: boolean;
   smoothing?: Smoothing;
+  /** When set (>= 2 hex colors), quantization maps to exactly these colors. */
+  fixedPalette?: string[];
   seed?: number;
 }
 
@@ -87,6 +89,7 @@ export interface ProjectState {
   sourceImage: ImageBitmap | null;
   sourceBlob: Blob | null;
   sourceName: string;
+  rotation: number;
   crop: CropRegion | null;
   paperFormat: PaperFormat;
   orientation: Orientation;
@@ -104,6 +107,7 @@ export interface ProjectState {
   numberOpacity: number;
   lineScale: number;
   jpgQuality: number;
+  customPalette: string[] | null;
   processing: boolean;
   error: string | null;
 }

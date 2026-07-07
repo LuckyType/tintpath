@@ -29,7 +29,8 @@
     "resumeTitle": "Da weitermachen, wo du aufgehört hast?",
     "resumeSavedAt": "gespeichert {date}",
     "resume": "Fortsetzen",
-    "discard": "Verwerfen"
+    "discard": "Verwerfen",
+    "sample": "Kein Foto zur Hand? Beispielbild ausprobieren"
   },
   "crop": {
     "title": "Bild zuschneiden und Papierformat wählen",
@@ -41,7 +42,9 @@
     "widthMm": "Breite (mm)",
     "heightMm": "Höhe (mm)",
     "reset": "Zuschnitt zurücksetzen",
-    "hint": "Rahmen ziehen zum Verschieben, Ecken ziehen zum Skalieren. Das Seitenverhältnis folgt dem Papierformat."
+    "hint": "Rahmen ziehen zum Verschieben, Ecken ziehen zum Skalieren. Das Seitenverhältnis folgt dem Papierformat.",
+    "rotateLeft": "Nach links drehen",
+    "rotateRight": "Nach rechts drehen"
   },
   "detail": {
     "title": "Detailgrad festlegen",
@@ -59,7 +62,11 @@
     "stats": "{colors} Farben, {regions} Regionen",
     "original": "Original",
     "quantized": "Vorschau",
-    "processing": "Berechne…"
+    "processing": "Berechne…",
+    "customPalette": "Eigene Farben verwenden",
+    "customPaletteHint": "Passend zu deinen Farben — der Farben-Regler wird ignoriert.",
+    "addColor": "Farbe hinzufügen",
+    "removeColor": "Farbe entfernen"
   },
   "outline": {
     "title": "Outlines prüfen",
@@ -114,7 +121,9 @@
     "error": "Export fehlgeschlagen. Bitte erneut versuchen.",
     "exporting": "Exportiere…",
     "withColors": "Mit Farben füllen",
-    "withNumbers": "Nummern einfügen"
+    "withNumbers": "Nummern einfügen",
+    "svgNumbers": "Nummern ins SVG einfügen",
+    "svgNumbersHint": "Als Text-Elemente — bei Bedarf in der Laser-Software in Pfade umwandeln."
   },
   "settings": {
     "language": "Sprache",

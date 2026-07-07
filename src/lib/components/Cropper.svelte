@@ -4,7 +4,7 @@ import { PAPER_SIZES, customPaperFormat, makePaperFormat, paperAspect } from '$l
 import { defaultCrop, project } from '$lib/stores/project';
 import { settings } from '$lib/stores/settings';
 import type { CropRegion } from '$lib/types';
-import { RectangleHorizontal, RectangleVertical } from 'lucide-svelte';
+import { RectangleHorizontal, RectangleVertical, RotateCcw, RotateCw } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
@@ -292,6 +292,28 @@ onMount(() => {
       </div>
     {/if}
 
+    <div class="grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        class="btn-secondary"
+        aria-label={$_('crop.rotateLeft')}
+        title={$_('crop.rotateLeft')}
+        on:click={() => void project.rotateImage(-1)}
+      >
+        <RotateCcw class="h-4 w-4" aria-hidden="true" />
+        90°
+      </button>
+      <button
+        type="button"
+        class="btn-secondary"
+        aria-label={$_('crop.rotateRight')}
+        title={$_('crop.rotateRight')}
+        on:click={() => void project.rotateImage(1)}
+      >
+        <RotateCw class="h-4 w-4" aria-hidden="true" />
+        90°
+      </button>
+    </div>
     <button type="button" class="btn-secondary" on:click={resetCrop}>{$_('crop.reset')}</button>
     <p class="text-xs text-slate-500 dark:text-slate-400">{$_('crop.hint')}</p>
   </div>

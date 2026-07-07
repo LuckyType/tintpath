@@ -53,6 +53,7 @@ export function makeSnapshot(s: ProjectState): SessionSnapshot {
   return {
     step: s.step,
     sourceName: s.sourceName,
+    rotation: s.rotation,
     crop: s.crop ? { ...s.crop } : null,
     paperFormat: { ...s.paperFormat },
     orientation: s.orientation,
@@ -66,6 +67,7 @@ export function makeSnapshot(s: ProjectState): SessionSnapshot {
     jpgQuality: s.jpgQuality,
     activeFilter: s.activeFilter,
     paletteHexes: s.palette.length > 0 ? s.palette.map((c) => c.hex) : null,
+    customPalette: s.customPalette ? [...s.customPalette] : null,
   };
 }
 

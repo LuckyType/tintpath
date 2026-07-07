@@ -5,7 +5,7 @@ import { renderQuantizedPixels } from '$lib/render';
 import { project } from '$lib/stores/project';
 import { settings } from '$lib/stores/settings';
 import type { Smoothing } from '$lib/types';
-import { Maximize2 } from 'lucide-svelte';
+import { Maximize2, Plus, X } from 'lucide-svelte';
 import { onDestroy, onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
@@ -65,6 +65,36 @@ function onNoiseChange(event: Event) {
 
 function onSmoothingChange(event: Event) {
   project.setSmoothing((event.currentTarget as HTMLSelectElement).value as Smoothing);
+  scheduleRecompute();
+}
+
+function toggleCustomPalette(event: Event) {
+  if ((event.currentTarget as HTMLInputElement).checked) {
+    // Start from the current result so users tweak instead of typing hexes
+    const seed =
+      state.palette.length >= 2 ? state.palette.map((c) => c.hex) : ['#1e293b', '#f8fafc'];
+    project.setCustomPalette(seed);
+  } else {
+    project.setCustomPalette(null);
+  }
+  scheduleRecompute();
+}
+
+function updateCustomColor(index: number, event: Event) {
+  const hexes = [...(state.customPalette ?? [])];
+  hexes[index] = (event.currentTarget as HTMLInputElement).value;
+  project.setCustomPalette(hexes);
+  scheduleRecompute();
+}
+
+function removeCustomColor(index: number) {
+  const hexes = (state.customPalette ?? []).filter((_, i) => i !== index);
+  project.setCustomPalette(hexes.length > 0 ? hexes : null);
+  scheduleRecompute();
+}
+
+function addCustomColor() {
+  project.setCustomPalette([...(state.customPalette ?? []), '#808080']);
   scheduleRecompute();
 }
 
@@ -164,6 +194,7 @@ onDestroy(() => {
         step="1"
         class="w-full accent-blue-600"
         value={state.detailLevel}
+        disabled={state.customPalette !== null}
         on:input={onDetailInput}
         aria-valuetext={String(state.detailLevel)}
       />
@@ -235,6 +266,52 @@ onDestroy(() => {
             <span class="block text-xs text-slate-500">{$_('detail.reduceNoiseHint')}</span>
           </span>
         </label>
+        <div>
+          <label class="flex min-h-[44px] items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              class="h-5 w-5 accent-blue-600"
+              checked={state.customPalette !== null}
+              on:change={toggleCustomPalette}
+            />
+            <span>
+              {$_('detail.customPalette')}
+              <span class="block text-xs text-slate-500">{$_('detail.customPaletteHint')}</span>
+            </span>
+          </label>
+          {#if state.customPalette}
+            <div class="mt-2 flex flex-wrap items-center gap-1.5">
+              {#each state.customPalette as hex, i (i)}
+                <span class="relative inline-flex">
+                  <input
+                    type="color"
+                    class="h-9 w-11 cursor-pointer rounded border border-slate-300 dark:border-slate-600"
+                    value={hex}
+                    aria-label={$_('colors.colorNumber', { values: { number: i + 1 } })}
+                    on:change={(e) => updateCustomColor(i, e)}
+                  />
+                  <button
+                    type="button"
+                    class="absolute -right-1.5 -top-1.5 rounded-full bg-slate-600 p-0.5 text-white hover:bg-red-600"
+                    aria-label={$_('detail.removeColor')}
+                    on:click={() => removeCustomColor(i)}
+                  >
+                    <X class="h-2.5 w-2.5" aria-hidden="true" />
+                  </button>
+                </span>
+              {/each}
+              <button
+                type="button"
+                class="btn-secondary !min-h-[36px] !px-2.5"
+                aria-label={$_('detail.addColor')}
+                title={$_('detail.addColor')}
+                on:click={addCustomColor}
+              >
+                <Plus class="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          {/if}
+        </div>
       </div>
     {/if}
 

@@ -1,8 +1,9 @@
 <script lang="ts">
-import { loadBitmap } from '$lib/image';
+import { loadBitmap, rotateBitmap } from '$lib/image';
 import { type SavedSession, clearSession, loadSession } from '$lib/persist';
 import { project } from '$lib/stores/project';
 import { toast } from '$lib/stores/toast';
+import { Sparkles } from 'lucide-svelte';
 import { Upload } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _, locale } from 'svelte-i18n';
@@ -45,11 +46,28 @@ function onChange(event: Event) {
   input.value = '';
 }
 
+async function loadSample() {
+  loading = true;
+  try {
+    const response = await fetch('/sample.png');
+    const blob = await response.blob();
+    const file = new File([blob], 'sample.png', { type: 'image/png' });
+    await handleFile(file);
+  } catch {
+    toast('error', $_('upload.errorLoad'));
+  } finally {
+    loading = false;
+  }
+}
+
 async function resumeSession() {
   if (!saved) return;
   loading = true;
   try {
-    const bitmap = await loadBitmap(saved.imageBlob);
+    let bitmap = await loadBitmap(saved.imageBlob);
+    if (saved.rotation) {
+      bitmap = await rotateBitmap(bitmap, Math.round(saved.rotation / 90));
+    }
     await project.restoreSession(saved, bitmap, saved.imageBlob);
   } catch {
     toast('error', $_('upload.errorLoad'));
@@ -119,6 +137,11 @@ onMount(async () => {
     <p id="upload-formats" class="text-xs text-slate-400">{$_('upload.formats')}</p>
   {/if}
 </div>
+
+<button type="button" class="btn-secondary mx-auto mt-4 flex" disabled={loading} on:click={loadSample}>
+  <Sparkles class="h-4 w-4" aria-hidden="true" />
+  {$_('upload.sample')}
+</button>
 
 <input
   bind:this={fileInput}

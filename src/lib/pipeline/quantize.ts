@@ -58,6 +58,16 @@ export function rgbToHex(rgb: [number, number, number]): string {
   return `#${rgb.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
 }
 
+export function hexToRgb(hex: string): [number, number, number] | null {
+  const normalized = hex.startsWith('#') ? hex : `#${hex}`;
+  if (!/^#[0-9a-fA-F]{6}$/.test(normalized)) return null;
+  return [
+    Number.parseInt(normalized.slice(1, 3), 16),
+    Number.parseInt(normalized.slice(3, 5), 16),
+    Number.parseInt(normalized.slice(5, 7), 16),
+  ];
+}
+
 /** CIE76 delta E — euclidean distance in LAB space. */
 export function deltaE(a: [number, number, number], b: [number, number, number]): number {
   const dl = a[0] - b[0];
@@ -250,6 +260,47 @@ export function quantize(
   for (let p = 0; p < pixelCount; p++) labelMap[p] = remap[labelMap[p]];
 
   return { labelMap, palette };
+}
+
+/**
+ * Quantize by mapping every pixel to the perceptually nearest color of a
+ * fixed, user-supplied palette (e.g. the paints someone actually owns).
+ * Unused colors are dropped and the rest ordered by usage, like `quantize`.
+ */
+export function quantizeToPalette(
+  pixels: Uint8ClampedArray,
+  width: number,
+  height: number,
+  paletteRgb: [number, number, number][],
+): QuantizeResult {
+  const pixelCount = width * height;
+  const centers = paletteRgb.map(([r, g, b]) => rgbToLab(r, g, b));
+  const labelMap = new Int32Array(pixelCount);
+  for (let p = 0; p < pixelCount; p++) {
+    const i = p * 4;
+    const lab = rgbToLab(pixels[i], pixels[i + 1], pixels[i + 2]);
+    let best = 0;
+    let bestD = Number.POSITIVE_INFINITY;
+    for (let c = 0; c < centers.length; c++) {
+      const dl = lab[0] - centers[c][0];
+      const da = lab[1] - centers[c][1];
+      const db = lab[2] - centers[c][2];
+      const d = dl * dl + da * da + db * db;
+      if (d < bestD) {
+        bestD = d;
+        best = c;
+      }
+    }
+    labelMap[p] = best;
+  }
+  // Keep the exact user colors (no re-averaging), then compact by usage
+  const palette: Color[] = paletteRgb.map((rgb, id) => ({
+    id,
+    rgb,
+    lab: centers[id],
+    hex: rgbToHex(rgb),
+  }));
+  return { labelMap, palette: compactPalette(labelMap, palette) };
 }
 
 /**

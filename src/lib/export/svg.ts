@@ -1,4 +1,4 @@
-import type { Color, LaserMode, OutlinePath, Region } from '../types';
+import type { Color, LabelPlacement, LaserMode, OutlinePath, Region } from '../types';
 import { grayscaleForLab } from './laser';
 
 const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
@@ -21,6 +21,9 @@ export interface SvgExportParams {
   height: number;
   mode: LaserMode;
   strokeWidth?: number;
+  /** Add a numbers layer (text elements) — outline and layer-per-color modes. */
+  placements?: LabelPlacement[];
+  includeNumbers?: boolean;
 }
 
 /**
@@ -33,6 +36,21 @@ export function generateSvg(params: SvgExportParams): string {
   const { outlines, regions, palette, width, height, mode, strokeWidth = 1 } = params;
   const colorOf = new Map<number, number>();
   for (const r of regions) colorOf.set(r.id, r.colorId);
+
+  // Optional numbers layer. Plain <text> keeps the file small and editable;
+  // laser suites that need paths can convert text on import.
+  let numbersLayer = '';
+  if (params.includeNumbers && params.placements?.length) {
+    const texts = params.placements
+      .map(
+        (p) =>
+          `<text x="${fmt(p.x + 0.5)}" y="${fmt(p.y + 0.5)}" font-size="${fmt(p.fontSize)}" dominant-baseline="central">${p.number}</text>`,
+      )
+      .join('\n');
+    numbersLayer =
+      '<g id="numbers" data-layer="numbers" fill="#000000" ' +
+      `font-family="sans-serif" text-anchor="middle">\n${texts}\n</g>`;
+  }
 
   const open =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${fmt(width)} ${fmt(height)}" ` +
@@ -75,7 +93,7 @@ export function generateSvg(params: SvgExportParams): string {
         );
       })
       .join('\n');
-    return `${open}\n${groups}\n</svg>`;
+    return `${open}\n${groups}${numbersLayer ? `\n${numbersLayer}` : ''}\n</svg>`;
   }
 
   const body = outlines
@@ -84,6 +102,6 @@ export function generateSvg(params: SvgExportParams): string {
     .join('\n');
   return (
     `${open}\n<g fill="none" stroke="#000000" stroke-width="${fmt(strokeWidth)}">` +
-    `\n${body}\n</g>\n</svg>`
+    `\n${body}\n</g>${numbersLayer ? `\n${numbersLayer}` : ''}\n</svg>`
   );
 }

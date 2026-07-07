@@ -10,16 +10,17 @@ accounts: every pixel stays on your device.
 
 - **Linear wizard** with live preview at every step:
   Upload → Crop & paper size → Detail level → Outlines → Colors → Export
-- **k-means color quantization** in LAB space with k-means++ seeding
+- **k-means color quantization** in LAB space with k-means++ seeding — or
+  restrict the palette to the paint colors you actually own
 - **Auto-merge** of tiny regions into their most similar neighbor
 - **Outline extraction** via connected components + Moore-neighbor contour
   tracing, smoothed with Douglas-Peucker
 - **Color editing**: swap single colors, or apply preset filters
   (pastel, vintage, high contrast, grayscale, neon, synthwave, 3D retro,
   pop art, ocean, sunset — with live palette previews)
-- **Exports**: PNG, JPG, PDF (template + color legend), SVG and DXF for laser
-  engraving — including *layer-per-color* and *grayscale (variable power)*
-  laser modes
+- **Exports**: PNG, JPG, PDF (template + color legend with a colored mini
+  reference), SVG and DXF for laser engraving — including *layer-per-color*,
+  *grayscale (variable power)* modes and an optional engraved-numbers layer
 - **Session resume**: pick up where you left off — everything is stored
   locally (IndexedDB), nothing ever leaves the device
 - **i18n** (English + German), dark mode, PWA/offline support
