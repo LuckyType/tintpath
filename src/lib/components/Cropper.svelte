@@ -4,6 +4,7 @@ import { PAPER_SIZES, customPaperFormat, makePaperFormat, paperAspect } from '$l
 import { defaultCrop, project } from '$lib/stores/project';
 import { settings } from '$lib/stores/settings';
 import type { CropRegion } from '$lib/types';
+import { RectangleHorizontal, RectangleVertical } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
@@ -265,7 +266,8 @@ onMount(() => {
           aria-pressed={state.orientation === 'portrait'}
           on:click={() => project.setOrientation('portrait')}
         >
-          ▯ {$_('crop.portrait')}
+          <RectangleVertical class="h-4 w-4" aria-hidden="true" />
+          {$_('crop.portrait')}
         </button>
         <button
           type="button"
@@ -273,7 +275,8 @@ onMount(() => {
           aria-pressed={state.orientation === 'landscape'}
           on:click={() => project.setOrientation('landscape')}
         >
-          ▭ {$_('crop.landscape')}
+          <RectangleHorizontal class="h-4 w-4" aria-hidden="true" />
+          {$_('crop.landscape')}
         </button>
       </div>
     </fieldset>

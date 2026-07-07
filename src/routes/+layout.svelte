@@ -2,9 +2,10 @@
 import '../app.css';
 import BackgroundArt from '$lib/components/BackgroundArt.svelte';
 import GitHubLink from '$lib/components/GitHubLink.svelte';
+import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 import { settings } from '$lib/stores/settings';
 import { dismissToast, toast, toasts } from '$lib/stores/toast';
-import type { Locale } from '$lib/types';
+import { Moon, Sun } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _, locale } from 'svelte-i18n';
 
@@ -12,11 +13,6 @@ $: if (typeof document !== 'undefined') {
   document.documentElement.classList.toggle('dark', $settings.theme === 'dark');
 }
 $: locale.set($settings.locale);
-
-function setLocale(event: Event) {
-  const value = (event.currentTarget as HTMLSelectElement).value as Locale;
-  settings.update((s) => ({ ...s, locale: value }));
-}
 
 function toggleTheme() {
   settings.update((s) => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark' }));
@@ -45,18 +41,7 @@ onMount(() => {
       </a>
       <p class="hidden text-sm text-slate-500 dark:text-slate-400 md:block">{$_('app.tagline')}</p>
       <div class="ml-auto flex items-center gap-2">
-        <label class="flex items-center gap-1 text-sm">
-          <span class="sr-only">{$_('settings.language')}</span>
-          <select
-            class="select !min-h-[36px] !w-auto"
-            value={$settings.locale}
-            on:change={setLocale}
-            aria-label={$_('settings.language')}
-          >
-            <option value="de">DE</option>
-            <option value="en">EN</option>
-          </select>
-        </label>
+        <LocaleSwitcher />
         <button
           type="button"
           class="btn-secondary !min-h-[36px] !px-3"
@@ -64,7 +49,11 @@ onMount(() => {
           aria-label={$_('settings.theme')}
           title={$settings.theme === 'dark' ? $_('settings.themeLight') : $_('settings.themeDark')}
         >
-          {$settings.theme === 'dark' ? '☀️' : '🌙'}
+          {#if $settings.theme === 'dark'}
+            <Sun class="h-4 w-4" aria-hidden="true" />
+          {:else}
+            <Moon class="h-4 w-4" aria-hidden="true" />
+          {/if}
         </button>
         <GitHubLink />
       </div>

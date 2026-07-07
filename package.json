@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "jspdf": "^2.5.2",
+    "lucide-svelte": "^1.0.1",
     "svelte-i18n": "^4.0.1"
   },
   "devDependencies": {

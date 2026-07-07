@@ -1,4 +1,5 @@
 <script lang="ts">
+import { ArrowLeft } from 'lucide-svelte';
 import { _ } from 'svelte-i18n';
 </script>
 
@@ -30,5 +31,8 @@ import { _ } from 'svelte-i18n';
     </p>
   </section>
 
-  <a href="/" class="btn-secondary self-start">← {$_('imprint.backToApp')}</a>
+  <a href="/" class="btn-secondary self-start">
+    <ArrowLeft class="h-4 w-4" aria-hidden="true" />
+    {$_('imprint.backToApp')}
+  </a>
 </article>

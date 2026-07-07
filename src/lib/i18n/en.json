@@ -141,5 +141,12 @@
   "footer": {
     "openSource": "Free & open source (MIT)",
     "noUploads": "No uploads, no accounts, no tracking"
+  },
+  "common": {
+    "enlarge": "Enlarge preview",
+    "close": "Close",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "zoomHint": "Scroll to zoom · drag to pan · double-click to toggle"
   }
 }

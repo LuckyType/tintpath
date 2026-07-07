@@ -8,6 +8,7 @@ import Uploader from '$lib/components/Uploader.svelte';
 import { clearSession, persistState } from '$lib/persist';
 import { TOTAL_STEPS, project } from '$lib/stores/project';
 import type { ProjectState } from '$lib/types';
+import { ArrowLeft, ArrowRight, ChevronRight, RotateCcw } from 'lucide-svelte';
 import { onDestroy } from 'svelte';
 import { _ } from 'svelte-i18n';
 
@@ -72,7 +73,7 @@ function handleReset() {
       {@const stepNumber = i + 1}
       <li class="flex items-center gap-1 sm:gap-2">
         {#if i > 0}
-          <span class="text-slate-300 dark:text-slate-600" aria-hidden="true">→</span>
+          <ChevronRight class="h-4 w-4 text-slate-300 dark:text-slate-600" aria-hidden="true" />
         {/if}
         <button
           type="button"
@@ -121,18 +122,21 @@ function handleReset() {
   <div class="flex gap-2">
     {#if state.step > 1}
       <button type="button" class="btn-secondary" on:click={() => project.prevStep()}>
-        ← {$_('nav.back')}
+        <ArrowLeft class="h-4 w-4" aria-hidden="true" />
+        {$_('nav.back')}
       </button>
     {/if}
     {#if state.sourceImage}
       <button type="button" class="btn-secondary" on:click={handleReset}>
+        <RotateCcw class="h-4 w-4" aria-hidden="true" />
         {$_('nav.startOver')}
       </button>
     {/if}
   </div>
   {#if state.step < TOTAL_STEPS && state.step > 1}
     <button type="button" class="btn-primary" disabled={nextDisabled} on:click={handleNext}>
-      {$_('nav.next')} →
+      {$_('nav.next')}
+      <ArrowRight class="h-4 w-4" aria-hidden="true" />
     </button>
   {/if}
 </div>

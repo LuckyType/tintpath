@@ -141,5 +141,12 @@
   "footer": {
     "openSource": "Kostenlos & Open Source (MIT)",
     "noUploads": "Keine Uploads, keine Konten, kein Tracking"
+  },
+  "common": {
+    "enlarge": "Vorschau vergrößern",
+    "close": "Schließen",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden",
+    "zoomHint": "Scrollen zum Zoomen · Ziehen zum Verschieben · Doppelklick zum Umschalten"
   }
 }

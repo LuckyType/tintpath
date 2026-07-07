@@ -1,13 +1,16 @@
 <script lang="ts">
+import PreviewModal from '$lib/components/PreviewModal.svelte';
 import { applyFilter } from '$lib/pipeline/palette';
 import { buildRegionColorMap, drawTemplate } from '$lib/render';
 import { project } from '$lib/stores/project';
 import type { PaletteFilter } from '$lib/types';
+import { Maximize2 } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
 let canvas: HTMLCanvasElement;
 let container: HTMLDivElement;
+let modal: PreviewModal;
 
 const filters: { id: PaletteFilter; labelKey: string }[] = [
   { id: 'none', labelKey: 'colors.filterNone' },
@@ -60,6 +63,33 @@ function draw() {
   });
 }
 
+function expandPreview() {
+  const result = state.result;
+  if (!result || !modal) return;
+  const palette = state.palette;
+  const lineScale = state.lineScale;
+  modal.show((target) => {
+    // Vector re-render at up to ~2000px for a crisp enlarged view
+    const s = Math.max(1, Math.min(4, 2000 / Math.max(result.width, result.height)));
+    target.width = Math.round(result.width * s);
+    target.height = Math.round(result.height * s);
+    const ctx = target.getContext('2d');
+    if (!ctx) return;
+    drawTemplate(ctx, {
+      outlines: result.outlines,
+      placements: result.placements,
+      palette,
+      regionColorIds: buildRegionColorMap(result.regions),
+      width: result.width,
+      height: result.height,
+      scale: s,
+      showFill: true,
+      showNumbers: false,
+      lineWidth: 1.2 * lineScale,
+    });
+  });
+}
+
 function onSwap(colorId: number, event: Event) {
   project.swapPaletteColor(colorId, (event.currentTarget as HTMLInputElement).value);
 }
@@ -76,8 +106,17 @@ onMount(() => {
 <p class="mb-3 text-sm text-slate-500 dark:text-slate-400">{$_('colors.hint')}</p>
 
 <div class="grid gap-4 lg:grid-cols-[1fr_320px]">
-  <div bind:this={container} class="card flex items-start justify-center !p-2">
+  <div bind:this={container} class="card relative flex items-start justify-center !p-2">
     <canvas bind:this={canvas} class="rounded" aria-label={$_('colors.title')}></canvas>
+    <button
+      type="button"
+      class="absolute right-3 top-3 rounded-lg bg-white/85 p-2 text-slate-600 shadow hover:bg-white dark:bg-slate-900/85 dark:text-slate-300 dark:hover:bg-slate-900"
+      aria-label={$_('common.enlarge')}
+      title={$_('common.enlarge')}
+      on:click={expandPreview}
+    >
+      <Maximize2 class="h-4 w-4" aria-hidden="true" />
+    </button>
   </div>
 
   <div class="flex flex-col gap-4">
@@ -134,3 +173,5 @@ onMount(() => {
     </div>
   </div>
 </div>
+
+<PreviewModal bind:this={modal} title={$_('colors.title')} />

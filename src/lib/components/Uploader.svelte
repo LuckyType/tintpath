@@ -3,6 +3,7 @@ import { loadBitmap } from '$lib/image';
 import { type SavedSession, clearSession, loadSession } from '$lib/persist';
 import { project } from '$lib/stores/project';
 import { toast } from '$lib/stores/toast';
+import { Upload } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _, locale } from 'svelte-i18n';
 
@@ -111,20 +112,7 @@ onMount(async () => {
       aria-label={$_('detail.processing')}
     ></div>
   {:else}
-    <svg
-      class="h-14 w-14 text-slate-400"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="1.5"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
-      />
-    </svg>
+    <Upload class="h-14 w-14 text-slate-400" strokeWidth={1.5} aria-hidden="true" />
     <p class="text-lg font-medium">{$_('upload.drop')}</p>
     <p class="text-sm text-slate-500">{$_('upload.or')}</p>
     <span class="btn-primary pointer-events-none">{$_('upload.browse')}</span>

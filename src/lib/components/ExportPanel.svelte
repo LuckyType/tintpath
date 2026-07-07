@@ -1,5 +1,6 @@
 <script lang="ts">
 import AdvancedToggle from '$lib/components/AdvancedToggle.svelte';
+import PreviewModal from '$lib/components/PreviewModal.svelte';
 import { generateDxf } from '$lib/export/dxf';
 import { exportPdf } from '$lib/export/pdf';
 import { downloadBlob, exportGrayscalePng, exportRaster } from '$lib/export/png';
@@ -9,11 +10,13 @@ import { project } from '$lib/stores/project';
 import { settings } from '$lib/stores/settings';
 import { toast } from '$lib/stores/toast';
 import type { LaserMode } from '$lib/types';
+import { Download, Maximize2 } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
 let canvas: HTMLCanvasElement;
 let container: HTMLDivElement;
+let modal: PreviewModal;
 let busy: string | null = null;
 let withColors = false;
 let withNumbers = true;
@@ -153,6 +156,38 @@ const exportGrayscale = () =>
     downloadBlob(blob, `${baseName}-grayscale.png`);
   });
 
+function expandPreview() {
+  const result = state.result;
+  if (!result || !modal) return;
+  const snapshot = {
+    palette: state.palette,
+    numberOpacity: state.numberOpacity,
+    lineScale: state.lineScale,
+    fill: withColors,
+    numbers: withNumbers,
+  };
+  modal.show((target) => {
+    const s = Math.max(1, Math.min(4, 2000 / Math.max(result.width, result.height)));
+    target.width = Math.round(result.width * s);
+    target.height = Math.round(result.height * s);
+    const ctx = target.getContext('2d');
+    if (!ctx) return;
+    drawTemplate(ctx, {
+      outlines: result.outlines,
+      placements: result.placements,
+      palette: snapshot.palette,
+      regionColorIds: buildRegionColorMap(result.regions),
+      width: result.width,
+      height: result.height,
+      scale: s,
+      showFill: snapshot.fill,
+      showNumbers: snapshot.numbers,
+      numberOpacity: snapshot.numberOpacity,
+      lineWidth: 1.2 * snapshot.lineScale,
+    });
+  });
+}
+
 function onLaserMode(event: Event) {
   project.setLaserMode((event.currentTarget as HTMLSelectElement).value as LaserMode);
 }
@@ -175,8 +210,17 @@ onMount(() => {
 <h2 class="mb-3 text-lg font-semibold">{$_('export.title')}</h2>
 
 <div class="grid gap-4 lg:grid-cols-[1fr_340px]">
-  <div bind:this={container} class="card flex items-start justify-center !p-2">
+  <div bind:this={container} class="card relative flex items-start justify-center !p-2">
     <canvas bind:this={canvas} class="rounded" aria-label={$_('export.title')}></canvas>
+    <button
+      type="button"
+      class="absolute right-3 top-3 rounded-lg bg-white/85 p-2 text-slate-600 shadow hover:bg-white dark:bg-slate-900/85 dark:text-slate-300 dark:hover:bg-slate-900"
+      aria-label={$_('common.enlarge')}
+      title={$_('common.enlarge')}
+      on:click={expandPreview}
+    >
+      <Maximize2 class="h-4 w-4" aria-hidden="true" />
+    </button>
   </div>
 
   <div class="flex flex-col gap-4">
@@ -240,9 +284,11 @@ onMount(() => {
 
     <div class="card grid grid-cols-2 gap-2">
       <button type="button" class="btn-primary" disabled={busy !== null} on:click={exportPng}>
+        <Download class="h-4 w-4" aria-hidden="true" />
         {busy === 'png' ? $_('export.exporting') : $_('export.png')}
       </button>
       <button type="button" class="btn-primary" disabled={busy !== null} on:click={exportJpg}>
+        <Download class="h-4 w-4" aria-hidden="true" />
         {busy === 'jpg' ? $_('export.exporting') : $_('export.jpg')}
       </button>
       <button
@@ -251,6 +297,7 @@ onMount(() => {
         disabled={busy !== null}
         on:click={exportPdfFile}
       >
+        <Download class="h-4 w-4" aria-hidden="true" />
         {busy === 'pdf' ? $_('export.exporting') : `${$_('export.pdf')} — ${$_('export.pdfHint')}`}
       </button>
     </div>
@@ -266,9 +313,11 @@ onMount(() => {
       </div>
       <div class="grid grid-cols-2 gap-2">
         <button type="button" class="btn-secondary" disabled={busy !== null} on:click={exportSvgFile}>
-          {busy === 'svg' ? $_('export.exporting') : `${$_('export.svg')} ✦`}
+          <Download class="h-4 w-4" aria-hidden="true" />
+          {busy === 'svg' ? $_('export.exporting') : $_('export.svg')}
         </button>
         <button type="button" class="btn-secondary" disabled={busy !== null} on:click={exportDxfFile}>
+          <Download class="h-4 w-4" aria-hidden="true" />
           {busy === 'dxf' ? $_('export.exporting') : $_('export.dxf')}
         </button>
         {#if state.laserMode === 'grayscale'}
@@ -278,6 +327,7 @@ onMount(() => {
             disabled={busy !== null}
             on:click={exportGrayscale}
           >
+            <Download class="h-4 w-4" aria-hidden="true" />
             {busy === 'gray' ? $_('export.exporting') : $_('export.grayscalePng')}
           </button>
         {/if}
@@ -286,3 +336,5 @@ onMount(() => {
     </div>
   </div>
 </div>
+
+<PreviewModal bind:this={modal} title={$_('export.title')} />

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { buildRegionColorMap, drawTemplate } from '$lib/render';
 import { project } from '$lib/stores/project';
+import { Maximize, Minimize, ZoomIn, ZoomOut } from 'lucide-svelte';
 import { onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
@@ -8,6 +9,7 @@ let canvas: HTMLCanvasElement;
 let container: HTMLDivElement;
 let showFill = false;
 let showNumbers = true;
+let isFullscreen = false;
 
 let zoom = 1;
 let offsetX = 0;
@@ -41,7 +43,7 @@ function resizeCanvas(): boolean {
   if (!container) return false;
   const dpr = window.devicePixelRatio || 1;
   const cssW = container.clientWidth;
-  const cssH = Math.min(window.innerHeight * 0.65, 620);
+  const cssH = isFullscreen ? container.clientHeight : Math.min(window.innerHeight * 0.65, 620);
   const w = Math.max(1, Math.round(cssW * dpr));
   const h = Math.max(1, Math.round(cssH * dpr));
   if (canvas.width !== w || canvas.height !== h) {
@@ -157,6 +159,23 @@ function onPointerUp(event: PointerEvent) {
   if (pointers.size === 0) panStart = null;
 }
 
+async function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else if (container?.requestFullscreen) {
+      await container.requestFullscreen();
+    }
+  } catch {
+    // Fullscreen unsupported — zoom controls still work.
+  }
+}
+
+function onFullscreenChange() {
+  isFullscreen = document.fullscreenElement === container;
+  requestAnimationFrame(() => fit());
+}
+
 onMount(() => {
   if (!state.result && state.croppedImage && !state.processing) void project.recompute();
   const observer = new ResizeObserver(() => draw());
@@ -210,13 +229,45 @@ onMount(() => {
     </span>
   </label>
   <div class="ml-auto flex gap-2">
-    <button type="button" class="btn-secondary !px-3" aria-label={$_('outline.zoomOut')} on:click={() => zoomAt(canvas.clientWidth / 2, canvas.clientHeight / 2, 1 / 1.3)}>−</button>
-    <button type="button" class="btn-secondary !px-3" aria-label={$_('outline.zoomIn')} on:click={() => zoomAt(canvas.clientWidth / 2, canvas.clientHeight / 2, 1.3)}>+</button>
+    <button
+      type="button"
+      class="btn-secondary !px-3"
+      aria-label={$_('outline.zoomOut')}
+      on:click={() => zoomAt(canvas.clientWidth / 2, canvas.clientHeight / 2, 1 / 1.3)}
+    >
+      <ZoomOut class="h-4 w-4" aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      class="btn-secondary !px-3"
+      aria-label={$_('outline.zoomIn')}
+      on:click={() => zoomAt(canvas.clientWidth / 2, canvas.clientHeight / 2, 1.3)}
+    >
+      <ZoomIn class="h-4 w-4" aria-hidden="true" />
+    </button>
     <button type="button" class="btn-secondary" on:click={fit}>{$_('outline.fit')}</button>
+    <button
+      type="button"
+      class="btn-secondary !px-3"
+      aria-label={isFullscreen ? $_('common.exitFullscreen') : $_('common.fullscreen')}
+      title={isFullscreen ? $_('common.exitFullscreen') : $_('common.fullscreen')}
+      on:click={toggleFullscreen}
+    >
+      {#if isFullscreen}
+        <Minimize class="h-4 w-4" aria-hidden="true" />
+      {:else}
+        <Maximize class="h-4 w-4" aria-hidden="true" />
+      {/if}
+    </button>
   </div>
 </div>
 
-<div bind:this={container} class="card overflow-hidden !p-0">
+<svelte:document on:fullscreenchange={onFullscreenChange} />
+
+<div
+  bind:this={container}
+  class="card overflow-hidden !p-0 {isFullscreen ? 'flex items-stretch !rounded-none bg-white dark:bg-slate-900' : ''}"
+>
   <canvas
     bind:this={canvas}
     class="w-full touch-none {state.processing ? 'opacity-50' : ''}"

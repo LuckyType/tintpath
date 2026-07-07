@@ -1,9 +1,11 @@
 <script lang="ts">
 import AdvancedToggle from '$lib/components/AdvancedToggle.svelte';
+import PreviewModal from '$lib/components/PreviewModal.svelte';
 import { renderQuantizedPixels } from '$lib/render';
 import { project } from '$lib/stores/project';
 import { settings } from '$lib/stores/settings';
 import type { Smoothing } from '$lib/types';
+import { Maximize2 } from 'lucide-svelte';
 import { onDestroy, onMount } from 'svelte';
 import { _ } from 'svelte-i18n';
 
@@ -12,6 +14,8 @@ const DEBOUNCE_MS = 200;
 let originalCanvas: HTMLCanvasElement;
 let quantizedCanvas: HTMLCanvasElement;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let modal: PreviewModal;
+let modalTitle = '';
 
 $: state = $project;
 $: colorCount = state.palette.length;
@@ -64,6 +68,30 @@ function onSmoothingChange(event: Event) {
   scheduleRecompute();
 }
 
+function expandOriginal() {
+  const image = state.croppedImage;
+  if (!image || !modal) return;
+  modalTitle = $_('detail.original');
+  modal.show((canvas) => {
+    canvas.width = image.width;
+    canvas.height = image.height;
+    canvas.getContext('2d')?.putImageData(image, 0, 0);
+  });
+}
+
+function expandQuantized() {
+  const result = state.result;
+  if (!result || !modal) return;
+  modalTitle = $_('detail.quantized');
+  const palette = state.palette;
+  modal.show((canvas) => {
+    canvas.width = result.width;
+    canvas.height = result.height;
+    const pixels = renderQuantizedPixels(result.labelMap, palette, result.width, result.height);
+    canvas.getContext('2d')?.putImageData(new ImageData(pixels, result.width, result.height), 0, 0);
+  });
+}
+
 onMount(() => {
   if (!state.croppedImage) project.applyCrop();
   if (!$project.result && $project.croppedImage && !$project.processing) void project.recompute();
@@ -78,12 +106,21 @@ onDestroy(() => {
 
 <div class="grid gap-4 lg:grid-cols-[1fr_280px]">
   <div class="grid gap-3 sm:grid-cols-2">
-    <figure class="card !p-2">
+    <figure class="card relative !p-2">
       <figcaption class="mb-1 text-center text-xs font-medium text-slate-500">
         {$_('detail.original')}
       </figcaption>
       <canvas bind:this={originalCanvas} class="w-full rounded" aria-label={$_('detail.original')}
       ></canvas>
+      <button
+        type="button"
+        class="absolute right-3 top-3 rounded-lg bg-white/85 p-2 text-slate-600 shadow hover:bg-white dark:bg-slate-900/85 dark:text-slate-300 dark:hover:bg-slate-900"
+        aria-label={$_('common.enlarge')}
+        title={$_('common.enlarge')}
+        on:click={expandOriginal}
+      >
+        <Maximize2 class="h-4 w-4" aria-hidden="true" />
+      </button>
     </figure>
     <figure class="card relative !p-2">
       <figcaption class="mb-1 text-center text-xs font-medium text-slate-500">
@@ -91,6 +128,15 @@ onDestroy(() => {
       </figcaption>
       <canvas bind:this={quantizedCanvas} class="w-full rounded" aria-label={$_('detail.quantized')}
       ></canvas>
+      <button
+        type="button"
+        class="absolute right-3 top-3 rounded-lg bg-white/85 p-2 text-slate-600 shadow hover:bg-white dark:bg-slate-900/85 dark:text-slate-300 dark:hover:bg-slate-900"
+        aria-label={$_('common.enlarge')}
+        title={$_('common.enlarge')}
+        on:click={expandQuantized}
+      >
+        <Maximize2 class="h-4 w-4" aria-hidden="true" />
+      </button>
       {#if state.processing}
         <div
           class="absolute inset-0 flex items-center justify-center rounded-xl bg-white/60 dark:bg-slate-900/60"
@@ -197,3 +243,5 @@ onDestroy(() => {
     {/if}
   </div>
 </div>
+
+<PreviewModal bind:this={modal} title={modalTitle} />
