@@ -1,8 +1,14 @@
 import type { PipelineParams, PipelineResult } from '../types';
 import { computePlacements } from './numbering';
-import { extractOutlines, findRegions, mergeSmallRegions, reduceNoiseFilter } from './outline';
+import {
+  computeJunctions,
+  extractOutlines,
+  findRegions,
+  mergeSmallRegions,
+  reduceNoiseFilter,
+} from './outline';
 import { compactPalette, hexToRgb, quantize, quantizeToPalette } from './quantize';
-import { simplifyClosed } from './simplify';
+import { simplifyContour } from './simplify';
 
 /** Douglas-Peucker tolerance scaled with image size (1-3 px). */
 export function epsilonForSize(width: number, height: number): number {
@@ -47,9 +53,13 @@ export function runPipelineSync(
   // Smoothing preference scales the Douglas-Peucker tolerance
   const smoothingFactor = params.smoothing === 'low' ? 0.5 : params.smoothing === 'high' ? 2 : 1;
   const epsilon = epsilonForSize(width, height) * smoothingFactor;
-  const outlines = extractOutlines(regionMap, width, height, regions).map((o) => ({
+  // Junction-aware simplification keeps shared boundaries exactly coincident
+  const junctions = computeJunctions(regionMap, width, height);
+  const gridWidth = width + 1;
+  const isJunction = (p: { x: number; y: number }) => junctions[p.y * gridWidth + p.x] === 1;
+  const outlines = extractOutlines(regionMap, width, height, regions, junctions).map((o) => ({
     regionId: o.regionId,
-    points: simplifyClosed(o.points, epsilon),
+    points: simplifyContour(o.points, epsilon, isJunction),
   }));
   const placements = computePlacements(regionMap, width, height, regions);
 

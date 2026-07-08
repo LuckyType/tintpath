@@ -209,22 +209,50 @@ export function reduceNoiseFilter(labelMap: Int32Array, width: number, height: n
   return out;
 }
 
-// Moore neighborhood, clockwise in screen coordinates (y grows downward):
-// E, SE, S, SW, W, NW, N, NE
-const DIR_X = [1, 1, 0, -1, -1, -1, 0, 1];
-const DIR_Y = [0, 1, 1, 1, 0, -1, -1, -1];
+// Edge-walk directions on the pixel-corner lattice: E, S, W, N (y grows down)
+const EDGE_DX = [1, 0, -1, 0];
+const EDGE_DY = [0, 1, 0, -1];
 
-function dirFromDelta(dx: number, dy: number): number {
-  for (let d = 0; d < 8; d++) {
-    if (DIR_X[d] === dx && DIR_Y[d] === dy) return d;
+/**
+ * Mark lattice corners where more than two boundary edges meet (three or four
+ * regions touching, or a region boundary hitting the image border). Contours
+ * must keep these corners as vertices so that shared boundary runs can be
+ * simplified identically for both adjacent regions.
+ * Grid is (width+1) x (height+1), indexed y * (width + 1) + x.
+ */
+export function computeJunctions(regionMap: Int32Array, width: number, height: number): Uint8Array {
+  const gw = width + 1;
+  const junctions = new Uint8Array(gw * (height + 1));
+  const label = (x: number, y: number): number =>
+    x < 0 || y < 0 || x >= width || y >= height ? -1 : regionMap[y * width + x];
+
+  for (let y = 0; y <= height; y++) {
+    for (let x = 0; x <= width; x++) {
+      const nw = label(x - 1, y - 1);
+      const ne = label(x, y - 1);
+      const sw = label(x - 1, y);
+      const se = label(x, y);
+      let edges = 0;
+      if (nw !== ne) edges++;
+      if (sw !== se) edges++;
+      if (nw !== sw) edges++;
+      if (ne !== se) edges++;
+      if (edges > 2) junctions[y * gw + x] = 1;
+    }
   }
-  return 4;
+  return junctions;
 }
 
 /**
- * Moore-neighbor contour tracing of one region's outer boundary.
+ * Contour tracing along the pixel-EDGE lattice (crack following, clockwise,
+ * region kept on the right). Returned points are lattice corners in
+ * 0..width / 0..height, so two adjacent regions produce exactly coincident
+ * boundary polylines — outlines render as a single line and region fills meet
+ * without unpainted 1px cracks (which pixel-center tracing suffered from).
+ *
  * `startX/startY` must be the region's raster-first pixel (see findRegions),
- * which guarantees the west neighbor lies outside the region.
+ * which guarantees the pixels above and to the left lie outside the region;
+ * the walk starts at that pixel's top-left corner heading east.
  */
 export function traceContour(
   regionMap: Int32Array,
@@ -234,53 +262,59 @@ export function traceContour(
   startX: number,
   startY: number,
   maxSteps: number,
+  junctions?: Uint8Array,
 ): { x: number; y: number }[] {
-  const inRegion = (x: number, y: number): boolean =>
+  const inside = (x: number, y: number): boolean =>
     x >= 0 && y >= 0 && x < width && y < height && regionMap[y * width + x] === regionId;
 
+  // Next direction at corner (cx, cy) arriving with direction `dir`:
+  // ahead-right pixel outside -> turn right; ahead-left inside -> turn left.
+  const turnAt = (cx: number, cy: number, dir: number): number => {
+    let rightInside: boolean;
+    let leftInside: boolean;
+    switch (dir) {
+      case 0: // E
+        rightInside = inside(cx, cy);
+        leftInside = inside(cx, cy - 1);
+        break;
+      case 1: // S
+        rightInside = inside(cx - 1, cy);
+        leftInside = inside(cx, cy);
+        break;
+      case 2: // W
+        rightInside = inside(cx - 1, cy - 1);
+        leftInside = inside(cx - 1, cy);
+        break;
+      default: // N
+        rightInside = inside(cx, cy - 1);
+        leftInside = inside(cx - 1, cy - 1);
+    }
+    if (!rightInside) return (dir + 1) % 4;
+    if (leftInside) return (dir + 3) % 4;
+    return dir;
+  };
+
+  const gridWidth = width + 1;
   const points: { x: number; y: number }[] = [{ x: startX, y: startY }];
   let cx = startX;
   let cy = startY;
-  let searchStart = 4; // backtrack starts at the west neighbor
-  let secondX = -1;
-  let secondY = -1;
+  let dir = 0; // east along the seed pixel's top edge
 
   for (let step = 0; step < maxSteps; step++) {
-    let foundDir = -1;
-    for (let i = 1; i <= 8; i++) {
-      const dir = (searchStart + i) % 8;
-      if (inRegion(cx + DIR_X[dir], cy + DIR_Y[dir])) {
-        foundDir = dir;
-        break;
-      }
+    cx += EDGE_DX[dir];
+    cy += EDGE_DY[dir];
+    const next = turnAt(cx, cy, dir);
+    if (cx === startX && cy === startY && next === 0) {
+      break; // back at the initial corner about to retrace the first edge
     }
-    if (foundDir === -1) break; // isolated single pixel
-
-    const nx = cx + DIR_X[foundDir];
-    const ny = cy + DIR_Y[foundDir];
-    // Stop when the walk would repeat its very first move (start -> second).
-    if (cx === startX && cy === startY && points.length > 1 && nx === secondX && ny === secondY) {
-      break;
+    // Direction changes become vertices; junction corners are kept even on
+    // straight runs so shared boundary runs stay splittable.
+    if (next !== dir || junctions?.[cy * gridWidth + cx] === 1) {
+      points.push({ x: cx, y: cy });
+      dir = next;
     }
-    if (points.length === 1) {
-      secondX = nx;
-      secondY = ny;
-    }
-    // Neighbor examined just before the hit becomes the new backtrack.
-    const backDir = (foundDir + 7) % 8;
-    const bx = cx + DIR_X[backDir];
-    const by = cy + DIR_Y[backDir];
-    cx = nx;
-    cy = ny;
-    points.push({ x: cx, y: cy });
-    searchStart = dirFromDelta(bx - cx, by - cy);
   }
 
-  // Drop a trailing revisit of the start pixel — the path is implicitly closed.
-  if (points.length > 1) {
-    const last = points[points.length - 1];
-    if (last.x === startX && last.y === startY) points.pop();
-  }
   return points;
 }
 
@@ -290,9 +324,19 @@ export function extractOutlines(
   width: number,
   height: number,
   regions: Region[],
+  junctions?: Uint8Array,
 ): OutlinePath[] {
   return regions.map((r) => ({
     regionId: r.id,
-    points: traceContour(regionMap, width, height, r.id, r.seed.x, r.seed.y, 4 * r.area + 16),
+    points: traceContour(
+      regionMap,
+      width,
+      height,
+      r.id,
+      r.seed.x,
+      r.seed.y,
+      4 * r.area + 16,
+      junctions,
+    ),
   }));
 }

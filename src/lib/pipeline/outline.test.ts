@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  computeJunctions,
   extractOutlines,
   findRegions,
   mergeSmallRegions,
@@ -81,27 +82,113 @@ describe('reduceNoiseFilter', () => {
 });
 
 describe('traceContour', () => {
-  it('walks the perimeter of a solid 3x3 block clockwise', () => {
+  it('walks the edge lattice of a solid 3x3 block clockwise', () => {
     const labelMap = new Int32Array(9).fill(0);
     const { regionMap } = findRegions(labelMap, 3, 3);
     const contour = traceContour(regionMap, 3, 3, 0, 0, 0, 100);
 
-    expect(contour).toHaveLength(8);
-    expect(contour[0]).toEqual({ x: 0, y: 0 });
-    const keys = new Set(contour.map((p) => `${p.x},${p.y}`));
-    expect(keys.size).toBe(8);
-    expect(keys.has('1,1')).toBe(false); // interior pixel is not on the contour
-    expect(keys.has('2,2')).toBe(true);
+    // Only corners are recorded; straight edge runs stay implicit
+    expect(contour).toEqual([
+      { x: 0, y: 0 },
+      { x: 3, y: 0 },
+      { x: 3, y: 3 },
+      { x: 0, y: 3 },
+    ]);
   });
 
-  it('returns a single point for a 1-pixel region', () => {
+  it('returns the four corners of a 1-pixel region', () => {
     const labelMap = new Int32Array([0, 1, 0, 0]);
     const { regionMap, regions } = findRegions(labelMap, 4, 1);
     const single = regions.find((r) => r.colorId === 1);
     expect(single).toBeDefined();
     if (!single) return;
     const contour = traceContour(regionMap, 4, 1, single.id, single.seed.x, single.seed.y, 100);
-    expect(contour).toEqual([{ x: 1, y: 0 }]);
+    expect(contour).toEqual([
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 2, y: 1 },
+      { x: 1, y: 1 },
+    ]);
+  });
+
+  it('produces exactly coincident boundaries for adjacent regions', () => {
+    // 4x2: left half color 0, right half color 1 — the shared border must be
+    // the same lattice segment (x=2) in both contours, with no 1px offset.
+    const labelMap = new Int32Array([0, 0, 1, 1, 0, 0, 1, 1]);
+    const { regionMap, regions } = findRegions(labelMap, 4, 2);
+    const [left, right] = regions;
+    const leftContour = traceContour(regionMap, 4, 2, left.id, left.seed.x, left.seed.y, 100);
+    const rightContour = traceContour(regionMap, 4, 2, right.id, right.seed.x, right.seed.y, 100);
+    expect(leftContour).toEqual([
+      { x: 0, y: 0 },
+      { x: 2, y: 0 },
+      { x: 2, y: 2 },
+      { x: 0, y: 2 },
+    ]);
+    expect(rightContour).toEqual([
+      { x: 2, y: 0 },
+      { x: 4, y: 0 },
+      { x: 4, y: 2 },
+      { x: 2, y: 2 },
+    ]);
+    // Shared edge x=2 from y=0..2 appears identically in both
+    const leftHasEdge = leftContour.some((p) => p.x === 2 && p.y === 0);
+    const rightHasEdge = rightContour.some((p) => p.x === 2 && p.y === 0);
+    expect(leftHasEdge && rightHasEdge).toBe(true);
+  });
+
+  it('follows concave shapes without cutting corners', () => {
+    // L-shape: (0,0), (0,1), (1,1)
+    const labelMap = new Int32Array([0, 1, 0, 0]);
+    const { regionMap, regions } = findRegions(labelMap, 2, 2);
+    const lShape = regions.find((r) => r.colorId === 0);
+    expect(lShape).toBeDefined();
+    if (!lShape) return;
+    const contour = traceContour(regionMap, 2, 2, lShape.id, lShape.seed.x, lShape.seed.y, 100);
+    expect(contour).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 2, y: 2 },
+      { x: 0, y: 2 },
+    ]);
+  });
+});
+
+describe('computeJunctions', () => {
+  it('marks corners where three or more regions meet', () => {
+    // 2x2 grid: [0,1 / 2,1] -> corner (1,1) touches regions 0, 2 and 1
+    const labelMap = new Int32Array([0, 1, 2, 1]);
+    const { regionMap } = findRegions(labelMap, 2, 2);
+    const junctions = computeJunctions(regionMap, 2, 2);
+    const gw = 3;
+    expect(junctions[1 * gw + 1]).toBe(1); // center corner
+    expect(junctions[0 * gw + 1]).toBe(1); // border meets 0|1 boundary
+    expect(junctions[0 * gw + 0]).toBe(0); // plain image corner
+    expect(junctions[1 * gw + 0]).toBe(1); // border meets 0|2 boundary
+  });
+
+  it('keeps straight-through junction corners as contour vertices', () => {
+    // Right column is one region whose left boundary passes straight through
+    // the junction at (1,1) where regions 0 and 2 meet it.
+    const labelMap = new Int32Array([0, 1, 2, 1]);
+    const { regionMap, regions } = findRegions(labelMap, 2, 2);
+    const junctions = computeJunctions(regionMap, 2, 2);
+    const right = regions.find((r) => r.colorId === 1);
+    expect(right).toBeDefined();
+    if (!right) return;
+    const contour = traceContour(
+      regionMap,
+      2,
+      2,
+      right.id,
+      right.seed.x,
+      right.seed.y,
+      100,
+      junctions,
+    );
+    expect(contour).toContainEqual({ x: 1, y: 1 });
   });
 });
 
